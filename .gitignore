@@ -1,4 +1,5 @@
 .env
+dailytracker.db
 __pycache__/
 *.pyc
 .vscode/

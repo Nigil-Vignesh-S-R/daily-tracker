@@ -475,7 +475,7 @@ class DailyTracker(QWidget):
         self.days_layout=QHBoxLayout()
         self.days_layout.addStretch()
         self.days_label=QLabel("days")
-        self.streak_days=QLabel("5")
+        self.streak_days=QLabel("")
         self.days_layout.addWidget(self.streak_days)
         self.days_layout.addWidget(self.days_label)
         self.days_layout.addStretch()
