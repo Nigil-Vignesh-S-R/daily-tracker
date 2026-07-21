@@ -51,5 +51,5 @@ Unlike cloud-based habit trackers, Daily Tracker stores all data locally using S
    - Python
    - PyQt5
    - SQLite3
-###🎯 Purpose
+-🎯 Purpose
     Daily Tracker was created to provide a lightweight, distraction-free productivity tool for tracking habits without relying on cloud services or complex setup. Everything is stored locally, giving users complete control over their data while delivering a smooth desktop experience.
