@@ -1,26 +1,22 @@
-CREATE DATABASE IF NOT EXISTS daily_tracker ;
-USE daily_tracker;
-
-CREATE TABLE habits(
-    habit_id INT PRIMARY KEY AUTO_INCREMENT,
-    habit_name varchar(50) NOT NULL,
-    created_at DATE NOT NULL DEFAULT(CURDATE()),
-
-    UNIQUE KEY uq_habit_name (habit_name)
+CREATE TABLE IF NOT EXISTS habits(
+    habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    habit_name TEXT NOT NULL UNIQUE,
+    created_at DATE NOT NULL DEFAULT(DATE('now'))
 );
 
-CREATE TABLE notes(
-    note_id INT PRIMARY KEY AUTO_INCREMENT,
-    date DATE NOT NULL DEFAULT(CURDATE()),
+CREATE TABLE IF NOT EXISTS notes(
+    note_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date DATE NOT NULL DEFAULT(DATE('now')),
     note TEXT NOT NULL
+    UNIQUE(date)
 );
 
-CREATE TABLE daily_log(
-    log_id INT PRIMARY KEY AUTO_INCREMENT,
-    date DATE NOT NULL DEFAULT(CURDATE()),
-    habit_id INT NOT NULL,
-    completed TINYINT(1) NOT NULL,
+CREATE TABLE IF NOT EXISTS daily_log(
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date DATE NOT NULL DEFAULT(DATE('now')),
+    habit_id INTEGER NOT NULL,
+    completed INTEGER NOT NULL,
 
-    UNIQUE KEY uq_habit_date (habit_id,date),
+    UNIQUE (habit_id,date),
     FOREIGN KEY (habit_id) REFERENCES habits(habit_id) ON DELETE CASCADE
 );
