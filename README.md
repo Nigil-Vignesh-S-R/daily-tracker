@@ -1,5 +1,5 @@
-##Daily Tracker
-   -Author: S R NIGIL VIGNESH
+## Daily Tracker
+   - Author: S R NIGIL VIGNESH
 
 Daily Tracker is a modern desktop habit-tracking application built with Python, PyQt5, and SQLite. It helps users build consistent routines by allowing them to create habits, monitor daily completion, maintain streaks, and record daily notes—all within a clean, responsive, and easy-to-use interface.
 
