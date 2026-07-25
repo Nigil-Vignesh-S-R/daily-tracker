@@ -263,6 +263,7 @@ class DailyTracker(QWidget):
         #styling
         self.setObjectnames()
         self.addStyles()
+        self.updateStats()
     def buildLeftLayout(self):
         self.left_layout=QVBoxLayout()
         #habit header
@@ -1004,14 +1005,17 @@ class DailyTracker(QWidget):
     def calculateStreak(self):
         if not self.habits:
             return 0
+        today=QDate.currentDate().toPyDate()
+        day=today
+        if not self.month_completions.get(today,set()):
+            day=today-timedelta(days=1)
         streak=0
-        day=QDate.currentDate().toPyDate()
         while True:
+            if day.month != today.month:
+                break
             if self.month_completions.get(day,set()):
                 streak+=1
                 day=day - timedelta(days=1)
-                if day.day>QDate.currentDate().day():
-                    break
             else: break
         return streak 
 if __name__ == "__main__":
