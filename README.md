@@ -1,56 +1,210 @@
-## Daily Tracker
-   - Author: S R NIGIL VIGNESH
+# 📖 Daily Tracker
 
-Daily Tracker is a modern desktop habit-tracking application built with Python, PyQt5, and SQLite. It helps users build consistent routines by allowing them to create habits, monitor daily completion, maintain streaks, and record daily notes—all within a clean, responsive, and easy-to-use interface.
+**Author:** S R Nigil Vignesh
 
-Unlike cloud-based habit trackers, Daily Tracker stores all data locally using SQLite, making it lightweight, fast, and requiring no additional database server or internet connection.
+Daily Tracker is a modern desktop habit-tracking application built with **Python**, **PyQt5**, and **MySQL**. It helps users build consistent routines by allowing them to create habits, track daily progress, maintain streaks, and write daily notes—all within a clean, responsive, and intuitive desktop interface.
 
-## ✨ Features
+The application stores all data locally in a MySQL database and performs database operations using background threads, ensuring a smooth, non-blocking user experience.
 
-### 📝 Habit Management
+---
+
+# ✨ Features
+
+## 📝 Habit Management
+
 - Add and delete habits with ease.
 - Prevents duplicate habit entries.
-- Input validation for cleaner data.
+- Input validation for cleaner and more reliable data.
+- Instant UI updates after habit changes.
 
-### ✅ Daily Habit Tracking
+---
+
+## ✅ Daily Habit Tracking
+
 - Mark habits as completed for each day.
-- Completion status is saved automatically.
-- Calendar-based tracking for every day of the month.
+- Completion status is stored permanently in the database.
+- Only the current day's habits are editable.
+- View previous months' completion history.
 
-### 📊 Progress Dashboard
-- Visual progress bar with completion percentage.
-- Displays completed habits versus total habits.
-- Real-time statistics that update instantly.
+---
 
-### 🔥 Streak Tracking
-- Tracks your current completion streak.
-- Encourages consistency and daily discipline.
+## 📊 Progress Dashboard
 
-### 📅 Interactive Calendar
-- Navigate between months.
-- View and manage habits for different dates.
+- Live completion percentage.
+- Progress bar with visual feedback.
+- Completed habits versus total habits.
+- Real-time statistics update automatically.
 
-### 📒 Daily Notes
-- Write notes or journal entries for each day.
-- Notes are automatically saved and loaded.
+---
 
-### 💾 SQLite Database
-- Local data storage using SQLite.
-- No MySQL server or additional setup required.
-- Portable database (`daily_tracker.db`) that travels with the application.
+## 🔥 Streak Tracking
 
-### ⚡ Responsive User Experience
-- Smooth interface powered by PyQt5.
-- Background database operations keep the UI responsive.
-- Clean dark-themed design with intuitive navigation.
+- Automatically calculates your current streak.
+- Correctly restores streak after restarting the application.
+- Encourages consistency through small daily progress.
 
-### 🎨 Modern Desktop Interface
-- Custom icons and polished layouts.
-- Easy-to-read tables and progress indicators.
-- Optimized for everyday use.
-### 🛠️ Tech Stack
-   - Python
-   - PyQt5
-   - SQLite3
-### 🎯 Purpose
-    Daily Tracker was created to provide a lightweight, distraction-free productivity tool for tracking habits without relying on cloud services or complex setup. Everything is stored locally, giving users complete control over their data while delivering a smooth desktop experience.
+> **Consistency Beats Intensity.**
+
+---
+
+## 📅 Interactive Calendar
+
+- Navigate between months effortlessly.
+- Habit table automatically synchronizes with the selected month.
+- Correctly handles months with **28, 29, 30, and 31 days**.
+- Easily review previous months' progress.
+
+---
+
+## 📒 Daily Notes
+
+- Write daily notes or journal entries.
+- Notes are automatically saved.
+- Previously saved notes load when the application starts.
+
+---
+
+## 💾 MySQL Database
+
+- Stores habits, daily logs, and notes.
+- Uses relational database design with foreign key constraints.
+- Secure configuration using environment variables (`.env`).
+- Clean separation between the user interface and database layer.
+
+---
+
+## ⚡ Responsive User Experience
+
+- Database operations run in the background using **QThread**.
+- Non-blocking interface while loading or saving data.
+- Real-time updates using Qt's signal-slot mechanism.
+- Smooth and responsive desktop experience.
+
+---
+
+## 🎨 Modern Desktop Interface
+
+- Clean dark-themed design.
+- Custom SVG icons.
+- Interactive calendar.
+- Progress dashboard.
+- Responsive tables with synchronized scrolling.
+- Highlighted current day for improved usability.
+
+---
+
+# 🛠️ Tech Stack
+
+- Python
+- PyQt5
+- MySQL
+- mysql-connector-python
+- Qt Signals & Slots
+- QThread
+
+---
+
+# 🚀 Installation
+
+## 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/daily-tracker.git
+
+cd daily-tracker
+```
+
+## 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## 3. Create the database
+
+Run the SQL script included in the repository.
+
+```text
+schema.sql
+```
+
+## 4. Start the application
+
+```bash
+python main.py
+```
+
+---
+
+# 📷 Screenshots
+
+> *![alt text](image.png)
+
+- Dashboard
+- Calendar Navigation
+- Daily Notes
+- Statistics Panel
+
+---
+
+# 📈 Current Features
+
+- ✅ Habit Management
+- ✅ Daily Habit Tracking
+- ✅ Calendar Navigation
+- ✅ Current Streak
+- ✅ Progress Dashboard
+- ✅ Daily Notes
+- ✅ Responsive UI (QThread)
+- ✅ MySQL Backend
+- ✅ Dark Theme
+
+---
+
+# 🚀 Roadmap
+
+### Completed
+
+- [x] Habit Management
+- [x] Daily Tracking
+- [x] Calendar Navigation
+- [x] Current Streak
+- [x] Daily Notes
+- [x] Progress Dashboard
+- [x] Responsive Database Operations
+
+### Planned
+
+- [ ] Monthly Analytics
+- [ ] Completion Graphs (Matplotlib)
+- [ ] Longest Streak Statistics
+- [ ] Habit-wise Analytics
+- [ ] CSV Export
+- [ ] Settings Page
+
+---
+
+# 📌 Version
+
+**Current Version:** `v1.0.1`
+
+### Recent Improvements
+
+- Fixed startup streak calculation.
+- Fixed calendar and habit table synchronization.
+- Fixed incorrect month lengths for February and 30-day months.
+- Improved streak visualization.
+- Enhanced calendar navigation.
+- Multiple UI and UX improvements.
+
+---
+
+# 🎯 Purpose
+
+Daily Tracker was created as a desktop application to practice modern software development concepts including GUI development with **PyQt5**, multithreading using **QThread**, relational database design with **MySQL**, and responsive application architecture.
+
+The goal is to provide a distraction-free habit tracker while continuously improving the project through new features, better user experience, and cleaner software design.
+
+---
+
+## ⭐ If you like this project, consider giving it a star!
