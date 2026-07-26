@@ -116,6 +116,17 @@ class getCompletionsWorker(QThread):
             self.fetched.emit(True,"",rows)
         except Exception as e:
             self.fetched.emit(False,str(e),[])
+class getCompleteDaysWorker(QThread):
+    fetched=pyqtSignal(bool,str, list)
+    def __init__(self,db:Database):
+        super().__init__()
+        self.db=db
+    def run(self):
+        try:
+            dates=self.db.get_completed_dates()
+            self.fetched.emit(True,"",dates)
+        except Exception as e:
+            self.fetched.emit(False,str(e),[])
 class DailyTracker(QWidget):
     def __init__(self):
         super().__init__()
@@ -124,6 +135,7 @@ class DailyTracker(QWidget):
         self.setWindowIcon(QIcon("./python/dailytracker/tracker.png"))
         self.db=Database()
         self.month_completions:set={}
+        self.db_ready=False
         self.initUI()
         self.styleCalendarHeader()
         self.dimAdjacentMonths()
@@ -158,6 +170,7 @@ class DailyTracker(QWidget):
         self.note_thread=getNoteWorker(self.db)
         self.note_thread.fetched.connect(self.noteFetched)
         self.note_thread.finished.connect(self.note_thread.deleteLater)
+        self.note_thread.finished.connect(self.loadStreak)
         self.note_thread.start()
     def habitFetched(self,success,error,habitlist):
         if success:
@@ -480,8 +493,7 @@ class DailyTracker(QWidget):
         self.days_layout.addWidget(self.streak_days)
         self.days_layout.addWidget(self.days_label)
         self.days_layout.addStretch()
-        self.keep_label=QLabel("""        Be Yourself,Belive Yourself
-(note: streak resets itself every month)""")
+        self.keep_label=QLabel("""        Consistency Beats Intensity""")
         self.streak_layout.addWidget(self.streak_header)
         self.streak_layout.addLayout(self.days_layout)
         self.streak_layout.addWidget(self.keep_label)
@@ -842,12 +854,61 @@ class DailyTracker(QWidget):
     def set_btn_icon(self,button:QPushButton,path:str,size=22):
         button.setIcon(QIcon(path))
         button.setIconSize(QSize(size,size))
+    def loadStreak(self):
+        self.streak_thread=getCompleteDaysWorker(self.db)
+        self.streak_thread.fetched.connect(self.streakFetched)
+        self.streak_thread.finished.connect(self.streak_thread.deleteLater)
+        self.streak_thread.start()
+    def streakFetched(self,success,error,dates):
+        if not success:
+            print(f"Error Loading Streak: {error}")
+            self.completed_dates=[]
+        else: 
+            self.completed_dates=dates
+        streak=self.calculateStreak(self.completed_dates)
+        self.streak_value.setText(f"{streak} Days")
+        self.streak_days.setText(f"{streak}")
+        self.db_ready=True
     def updateTable(self):
         self.styleCalendarHeader()
         self.dimAdjacentMonths()
-    def buildHabitTable(self):
-        date=QDate.currentDate()
+        if not self.db_ready:
+            return
+        year=self.calendar.yearShown()
+        month=self.calendar.monthShown()
+        self.buildHabitTable(year,month)
+        self.loadDisplayedCompletions(year,month)
+    def loadDisplayedCompletions(self,year,month):
+        self.display_completion_thread=getCompletionsWorker(self.db,year,month)
+        self.display_completion_thread.fetched.connect(self.displayCompletions)
+        self.display_completion_thread.finished.connect(
+            self.display_completion_thread.deleteLater
+        )
+        self.display_completion_thread.start()
+    def displayCompletions(self,success,error,rows):
+        if not success:
+            print(f"Error loading displayed Completions : {error}")
+            return
+        habit_id_to_row={habit_id:row for row,(habit_id,_) in enumerate(self.habits)}
+        for habit_id,log_date,completed in rows:
+            if habit_id not in habit_id_to_row: continue
+            row=habit_id_to_row[habit_id]
+            col=log_date.day-1
+            container=self.task_table.cellWidget(row,col)
+            if container:
+                chk_box=container.findChild(QCheckBox)
+                if chk_box and completed:
+                    chk_box.blockSignals(True)
+                    chk_box.setChecked(True)
+                    chk_box.blockSignals(False)
+    def buildHabitTable(self,year=None,month=None):
+        if year is None or month is None:
+            date=QDate.currentDate()
+            year=date.year()
+            month=date.month()
+        date=QDate(year,month,1)
         days=date.daysInMonth()
+        real_today=QDate.currentDate()
         self.habit_table.setColumnCount(1)
         self.habit_table.setRowCount(len(self.habits))
         self.habit_table.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -895,8 +956,8 @@ class DailyTracker(QWidget):
         for row in range(len(self.habits)):
             self.habit_table.setRowHeight(row,32)
             self.task_table.setRowHeight(row,32)
-        if len(self.habits) > 0:
-            self.task_table.scrollTo(self.task_table.model().index(0,today)
+        if len(self.habits) > 0 and year == real_today.year() and month==real_today.month():
+            self.task_table.scrollTo(self.task_table.model().index(0,real_today.day()-1)
                                  , QTableWidget.PositionAtCenter )
         self.task_table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
     def loadCompletions(self):
@@ -967,6 +1028,7 @@ class DailyTracker(QWidget):
               self.habitMarked(chk_box,t,success,error,h_scroll,v_scroll,hid,d,c)
             )
         self.mark_thread.finished.connect(self.mark_thread.deleteLater)
+        self.mark_thread.finished.connect(self.loadStreak)
         self.mark_thread.start()
         if not hasattr(self,"mark_threads"):
             self.mark_threads=[]
@@ -999,24 +1061,16 @@ class DailyTracker(QWidget):
         self.completion_value.setText(f"{percent}%")
         self.completed_value.setText(f"{completed_today}")
         self.total_value.setText(f"{total}")
-        streak=self.calculateStreak()
-        self.streak_value.setText(f"{streak} Days")
-        self.streak_days.setText(f"{streak}")
-    def calculateStreak(self):
-        if not self.habits:
+    def calculateStreak(self,completed_dates):
+        if not completed_dates:
             return 0
+        completed_set=set(completed_dates)
         today=QDate.currentDate().toPyDate()
-        day=today
-        if not self.month_completions.get(today,set()):
-            day=today-timedelta(days=1)
+        day = today if today in completed_set else today-timedelta(days=1)
         streak=0
-        while True:
-            if day.month != today.month:
-                break
-            if self.month_completions.get(day,set()):
-                streak+=1
-                day=day - timedelta(days=1)
-            else: break
+        while day in completed_set:
+            streak+=1
+            day=day - timedelta(days=1)
         return streak 
 if __name__ == "__main__":
     app=QApplication(sys.argv)

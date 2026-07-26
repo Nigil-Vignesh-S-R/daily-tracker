@@ -121,6 +121,17 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error Fetching Completions: {str(e)}")
             return[]
+    def get_completed_dates(self):
+        try:
+            query="""SELECT DISTINCT date from daily_log
+                     WHERE completed=1
+                     ORDER BY date DESC"""
+            self.cursor.execute(query)
+            rows=self.cursor.fetchall()
+            return [dt.date.fromisoformat(row[0]) for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error Fetching Completed Dates: {str(e)}")
+            return []
     def close_connection(self):
         if self.cursor:
             self.cursor.close()
