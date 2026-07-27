@@ -2,9 +2,9 @@
 
 **Author:** S R Nigil Vignesh
 
-Daily Tracker is a modern desktop habit-tracking application built with **Python**, **PyQt5**, and **MySQL**. It helps users build consistent routines by allowing them to create habits, track daily progress, maintain streaks, and write daily notes—all within a clean, responsive, and intuitive desktop interface.
+Daily Tracker is a modern desktop habit-tracking application built with **Python**, **PyQt5**, and **SQLite3**. It helps users build consistent routines by allowing them to create habits, track daily progress, maintain streaks, and write daily notes through a clean and responsive desktop interface.
 
-The application stores all data locally in a MySQL database and performs database operations using background threads, ensuring a smooth, non-blocking user experience.
+Unlike web-based habit trackers, Daily Tracker stores all data locally using SQLite, making it lightweight, portable, and easy to set up—no external database server is required.
 
 ---
 
@@ -12,19 +12,19 @@ The application stores all data locally in a MySQL database and performs databas
 
 ## 📝 Habit Management
 
-- Add and delete habits with ease.
+- Create and delete habits with ease.
 - Prevents duplicate habit entries.
-- Input validation for cleaner and more reliable data.
-- Instant UI updates after habit changes.
+- Input validation for reliable data.
+- Instant UI updates after modifications.
 
 ---
 
 ## ✅ Daily Habit Tracking
 
-- Mark habits as completed for each day.
-- Completion status is stored permanently in the database.
-- Only the current day's habits are editable.
-- View previous months' completion history.
+- Mark habits as completed for the current day.
+- Completion history is permanently stored.
+- Only today's entries are editable.
+- View habit completion for previous months.
 
 ---
 
@@ -32,16 +32,16 @@ The application stores all data locally in a MySQL database and performs databas
 
 - Live completion percentage.
 - Progress bar with visual feedback.
-- Completed habits versus total habits.
-- Real-time statistics update automatically.
+- Completed habits vs total habits.
+- Statistics update automatically.
 
 ---
 
 ## 🔥 Streak Tracking
 
 - Automatically calculates your current streak.
-- Correctly restores streak after restarting the application.
-- Encourages consistency through small daily progress.
+- Restores streak correctly after restarting the application.
+- Encourages consistency through daily progress.
 
 > **Consistency Beats Intensity.**
 
@@ -49,47 +49,49 @@ The application stores all data locally in a MySQL database and performs databas
 
 ## 📅 Interactive Calendar
 
-- Navigate between months effortlessly.
-- Habit table automatically synchronizes with the selected month.
-- Correctly handles months with **28, 29, 30, and 31 days**.
-- Easily review previous months' progress.
+- Navigate seamlessly between months.
+- Automatically synchronizes with the habit table.
+- Supports months with 28, 29, 30, and 31 days.
+- Review previous completion history effortlessly.
 
 ---
 
 ## 📒 Daily Notes
 
-- Write daily notes or journal entries.
-- Notes are automatically saved.
-- Previously saved notes load when the application starts.
+- Write notes for each day.
+- Automatically saves your notes.
+- Loads previously saved notes when reopening the application.
 
 ---
 
-## 💾 MySQL Database
+## 💾 Local SQLite Database
 
-- Stores habits, daily logs, and notes.
-- Uses relational database design with foreign key constraints.
-- Secure configuration using environment variables (`.env`).
+- Stores habits, completion records, and notes locally.
+- No database installation required.
+- Lightweight and portable.
+- Uses relational tables with foreign key support.
 - Clean separation between the user interface and database layer.
 
 ---
 
 ## ⚡ Responsive User Experience
 
-- Database operations run in the background using **QThread**.
-- Non-blocking interface while loading or saving data.
-- Real-time updates using Qt's signal-slot mechanism.
+- Database operations run in background threads using **QThread**.
+- Prevents the interface from freezing during database operations.
+- Uses Qt's signal-slot mechanism for real-time updates.
 - Smooth and responsive desktop experience.
 
 ---
 
 ## 🎨 Modern Desktop Interface
 
-- Clean dark-themed design.
+- Dark theme UI.
 - Custom SVG icons.
 - Interactive calendar.
 - Progress dashboard.
+- Statistics panel.
 - Responsive tables with synchronized scrolling.
-- Highlighted current day for improved usability.
+- Highlights the current day for improved usability.
 
 ---
 
@@ -97,8 +99,7 @@ The application stores all data locally in a MySQL database and performs databas
 
 - Python
 - PyQt5
-- MySQL
-- mysql-connector-python
+- SQLite3
 - Qt Signals & Slots
 - QThread
 
@@ -114,13 +115,17 @@ git clone https://github.com/Nigil-Vignesh-S-R/daily-tracker.git
 cd daily-tracker
 ```
 
-## 2. Install dependencies
+---
+
+## 2. Install the required packages
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 3. Start the application
+---
+
+## 3. Run the application
 
 ```bash
 python main.py
@@ -130,12 +135,8 @@ python main.py
 
 # 📷 Screenshots
 
-> *![alt text](image.png)
+<img width="1496" height="935" alt="image" src="https://github.com/user-attachments/assets/31cc8de1-11cb-4355-a0d4-3759da847ee0" />
 
-- Dashboard
-- Calendar Navigation
-- Daily Notes
-- Statistics Panel
 
 ---
 
@@ -143,13 +144,13 @@ python main.py
 
 - ✅ Habit Management
 - ✅ Daily Habit Tracking
-- ✅ Calendar Navigation
-- ✅ Current Streak
 - ✅ Progress Dashboard
+- ✅ Current Streak
+- ✅ Calendar Navigation
 - ✅ Daily Notes
-- ✅ Responsive UI (QThread)
-- ✅ MySQL Backend
-- ✅ Dark Theme
+- ✅ Responsive UI using QThread
+- ✅ SQLite Database
+- ✅ Modern Dark Theme
 
 ---
 
@@ -160,9 +161,9 @@ python main.py
 - [x] Habit Management
 - [x] Daily Tracking
 - [x] Calendar Navigation
+- [x] Progress Dashboard
 - [x] Current Streak
 - [x] Daily Notes
-- [x] Progress Dashboard
 - [x] Responsive Database Operations
 
 ### Planned
@@ -182,21 +183,33 @@ python main.py
 
 ### Recent Improvements
 
-- Fixed startup streak calculation.
-- Fixed calendar and habit table synchronization.
-- Fixed incorrect month lengths for February and 30-day months.
-- Improved streak visualization.
-- Enhanced calendar navigation.
-- Multiple UI and UX improvements.
+- Migrated from MySQL to SQLite3.
+- Simplified project setup.
+- Improved startup performance.
+- Fixed streak restoration.
+- Improved calendar synchronization.
+- Fixed month handling for February and 30-day months.
+- improved navigation through calendar
+- General UI and UX improvements.
 
 ---
 
-# 🎯 Purpose
+# 🎯 Objectives
 
-Daily Tracker was created as a desktop application to practice modern software development concepts including GUI development with **PyQt5**, multithreading using **QThread**, relational database design with **MySQL**, and responsive application architecture.
+This project was developed to improve productivity:
 
-The goal is to provide a distraction-free habit tracker while continuously improving the project through new features, better user experience, and cleaner software design.
+- Desktop application development with **PyQt5**
+- Multithreading using **QThread**
+- SQLite database design
+- Qt's Signal-Slot architecture
+- Responsive GUI programming
+- Clean application architecture
+- Object-oriented programming in Python
 
 ---
 
-## ⭐ If you like this project, consider giving it a star!
+## ⭐ Support
+
+If you found this project useful, consider giving it a **⭐ Star** on GitHub.
+
+It helps others discover the project and motivates future development.
