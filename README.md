@@ -120,15 +120,7 @@ cd daily-tracker
 pip install -r requirements.txt
 ```
 
-## 3. Create the database
-
-Run the SQL script included in the repository.
-
-```text
-schema.sql
-```
-
-## 4. Start the application
+## 3. Start the application
 
 ```bash
 python main.py
