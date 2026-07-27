@@ -109,7 +109,7 @@ The application stores all data locally in a MySQL database and performs databas
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/daily-tracker.git
+git clone https://github.com/Nigil-Vignesh-S-R/daily-tracker.git
 
 cd daily-tracker
 ```
