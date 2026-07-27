@@ -237,7 +237,7 @@ class DailyTracker(QWidget):
             self.updateStats()
     def styleCalendarHeader(self):
         weekDay_Format=QTextCharFormat()
-        weekDay_Format.setForeground(QColor("#D29104"))
+        weekDay_Format.setForeground(QColor("#FBB03B"))
         for day in[Qt.Monday,Qt.Tuesday,Qt.Wednesday,Qt.Thursday,Qt.Friday]:
             self.calendar.setWeekdayTextFormat(day,weekDay_Format)
     def dimAdjacentMonths(self):
@@ -246,7 +246,7 @@ class DailyTracker(QWidget):
         dim_format=QTextCharFormat()
         dim_format.setForeground(QColor("#4A4A4A"))
         normal_format=QTextCharFormat()
-        normal_format.setForeground(QColor("#D29104"))
+        normal_format.setForeground(QColor("#FBB03B"))
         first_of_month=QDate(current_year,current_month,1)
         grid_start=first_of_month.addDays(-(first_of_month.dayOfWeek()-1))
         for i in range(42):
@@ -551,11 +551,11 @@ class DailyTracker(QWidget):
                            padding-bottom:15px;
                            }
                            QFrame#centerFrame{
-                           border:2px solid #3B82F6;
+                           border:2px solid #13B0D6;
                            }
                            QLabel{
                            background:transparent;
-                           color:#D29104;
+                           color:#FBB03B;
                            font-size:24px;
                            }
                            QLabel#sideHeaders{
@@ -572,17 +572,17 @@ class DailyTracker(QWidget):
                            font-weight:500;
                            }
                            QLabel#progress{
-                           color:#3B82F6;
+                           color:#13B0D6;
                            font-weight:500;
                            font-size:20px;
                            }
                            QLabel#streak{
-                           color:hsl(43,95%,42%);
+                           color:#FBB03B;
                            font-weight:500;
                            font-size:20px;
                            }
                            QLabel#streakDays{
-                           color:hsl(36,100%,55%);
+                           color:#FBB03B;
                            font-size:50px;
                            font-weight:400;
                            font-style:italic;
@@ -598,12 +598,12 @@ class DailyTracker(QWidget):
                            padding-left:30px;
                            }
                            QLabel#percentLabel{
-                           color:#3B82F6;
+                           color:#13B0D6;
                            font-size:24px;
                            font-weight:450;
                            }
                            QLabel#finishedLabel{
-                           color:#3B82F6;
+                           color:#13B0D6;
                            font-size:24px;
                            font-weight:450;
                            }
@@ -612,12 +612,12 @@ class DailyTracker(QWidget):
                            font-size:20px;
                            }
                            QLabel#todayLabel{
-                           color:hsl(41,96%,41%);
+                           color:#FBB03B;
                            font-size:34px;
                            font-weight:460;
                            }
                            QLabel#notesHeader{
-                           color:#D29104;
+                           color:#FBB03B;
                            font-size:24px;
                            font-weight:500;
                            }
@@ -631,15 +631,15 @@ class DailyTracker(QWidget):
                            border:none;
                            border-radius:10px;
                            padding:10px;
-                           selection-background-color:#3B82F6;
+                           selection-background-color:#13B0D6;
                            font-size:18px;
                            }
                            QTextEdit::focus{
-                           border:2px solid #3B82F6;
+                           border:2px solid #13B0D6;
                            }
                            QListWidget{
                            background-color:#252525;
-                           color:hsl(41,92%,42%);
+                           color:#FBB03B;
                            border:none;
                            border-radius:10px;
                            font-size:18px;
@@ -650,7 +650,7 @@ class DailyTracker(QWidget):
                            min-height:25px;
                            }
                            QListWidget::item:selected{
-                           background-color:#3B82F6;
+                           background-color:#13B0D6;
                            color:white;
                            border-radius:6px;
                            }
@@ -661,12 +661,12 @@ class DailyTracker(QWidget):
                            height:12px;
                            }
                            QProgressBar::chunk{
-                           background:#3B82F6;
+                           background:#13B0D6;
                            border-radius:6px;
                            }
                            QLineEdit{
                            background-color:#252525;
-                           color:hsl(42,96%,41%);
+                           color:#FBB03B;
                            font-size:18px;
                            min-height:25px;
                            border:none;
@@ -674,14 +674,14 @@ class DailyTracker(QWidget):
                            padding:8px;
                            }
                            QLineEdit:focus{
-                           border:2px solid #3B82F6;
+                           border:2px solid #13B0D6;
                            }
                            QCalendarWidget QWidget{
                            background-color:#252525;
                            }
                            QCalendarWidget QToolButton{
                            background-color:#252525;
-                           color:hsl(41,96%,41%);
+                           color:#FBB03B;
                            border-radius:6px;
                            border:none;
                            padding:4px;
@@ -696,10 +696,10 @@ class DailyTracker(QWidget):
                            }
                            QCalendarWidget QMenu{
                            background-color:#252525;
-                           color:hsl(42,96%,42%)
+                           color:#FBB03B;
                            }
                            QCalendarWidget QAbstractItemView{
-                           selection-background-color:#3B82F6;
+                           selection-background-color:#13B0D6;
                            selection-color:white;
                            }
                            QCalendarWidget QTableView{
@@ -711,7 +711,7 @@ class DailyTracker(QWidget):
                            }
                            QCalendarWidget QTableView QHeaderView::section{
                            background-color:#252525;
-                           color:hsl(41,96%,42%);
+                           color:#FBB03B;
                            padding:6px;
                            border:none;
                            }
@@ -735,7 +735,7 @@ class DailyTracker(QWidget):
                            background-color:#15803D;
                            }
                            QPushButton#add_habit{
-                           background-color:#3B82F6;
+                           background-color:#13B0D6;
                            color:white;
                            }
                            QPushButton#delete_habit{
@@ -766,14 +766,14 @@ class DailyTracker(QWidget):
                            }
                            QHeaderView::section{
                            background-color:#252525;
-                           color:#D29104;
+                           color:#FBB03B;
                            border:1px solid #1E1E1E;
                            padding:8px;
                            font-size:16px;
                            font-weight:450;
                            }
                            QTableWidget::item:selected{
-                           background-color:#3B82F6;
+                           background-color:#13B0D6;
                            }
                            QScrollBar:horizontal{
                            background:rgb(0,0,0);
@@ -782,7 +782,7 @@ class DailyTracker(QWidget):
                            border-radius:6px;
                            }
                            QScrollBar::handle:horizontal{
-                           background:#3B82F6;
+                           background:#13B0D6;
                            border-radius:6px;
                            min-width:12px;
                            }
@@ -804,7 +804,7 @@ class DailyTracker(QWidget):
                            border-radius:6px;
                            }
                            QScrollBar::handle:vertical{
-                           background:#3B82F6;
+                           background:#13B0D6;
                            border-radius:6px;
                            min-height:12px;
                            }
@@ -830,15 +830,15 @@ class DailyTracker(QWidget):
                            background-color:#1E1E1E;
                            }
                            QCheckBox::indicator:hover{
-                           border:2px solid #3B82F6;
+                           border:2px solid #13B0D6;
                            background-color:#2B2B2B;
                            }
                            QCheckBox::indicator:pressed{
                            background-color:#353535;
                            }
                            QCheckBox::indicator:checked{
-                           background-color:#3B82F6;
-                           border:2px solid #3B82F6;
+                           background-color:#13B0D6;
+                           border:2px solid #13B0D6;
                            image:url("./python/dailytracker/check.svg");
                            }
                            QCheckBox::indicator:checked:hover{
