@@ -131,7 +131,7 @@ schema.sql
 ## 4. Start the application
 
 ```bash
-python main.py
+python dailytracker_ui.py
 ```
 
 ---
