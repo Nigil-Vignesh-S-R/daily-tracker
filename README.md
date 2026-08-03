@@ -138,7 +138,7 @@ python dailytracker_ui.py
 
 # 📷 Screenshots
 
-<img width="1496" height="935" alt="image" src="https://github.com/user-attachments/assets/31cc8de1-11cb-4355-a0d4-3759da847ee0" />
+![alt text](image-1.png)
 
 
 ---
