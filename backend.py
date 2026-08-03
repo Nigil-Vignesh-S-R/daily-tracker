@@ -58,10 +58,13 @@ class Database:
             print(f"Error adding Habit:{str(e)}")
             return None
     def get_habits(self):
-        query="""SELECT habit_id,habit_name from habits ORDER BY habit_id"""
+        query="""SELECT habit_id,habit_name,created_at from habits ORDER BY habit_id"""
         self.cursor.execute(query)
         rows=self.cursor.fetchall()
-        return rows
+        return [
+            (habit_id,habit_name,dt.date.fromisoformat(created_at))
+            for habit_id,habit_name, created_at in rows
+        ]
     def delete_habit(self,habit_id):
         try:
             query="""DELETE FROM habits WHERE habit_id =(?)"""

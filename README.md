@@ -16,7 +16,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 - Prevents duplicate habit entries.
 - Input validation for reliable data.
 - Instant UI updates after modifications.
-
+- Preserves the creation date of every habit.
 ---
 
 ## ✅ Daily Habit Tracking
@@ -24,8 +24,9 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 - Mark habits as completed for the current day.
 - Completion history is permanently stored.
 - Only today's entries are editable.
-- View habit completion for previous months.
-
+- Browse previous and upcoming months using the integrated calendar.
+- Color-coded completion indicators (✓ Completed / ✗ Incomplete).
+- Completion indicators are only shown from a habit's creation date onward.
 ---
 
 ## 📊 Progress Dashboard
@@ -85,13 +86,15 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ## 🎨 Modern Desktop Interface
 
-- Dark theme UI.
+- Modern dark theme.
 - Custom SVG icons.
 - Interactive calendar.
 - Progress dashboard.
 - Statistics panel.
+- Dedicated streak widget.
 - Responsive tables with synchronized scrolling.
 - Highlights the current day for improved usability.
+- Color-coded habit completion indicators.
 
 ---
 
@@ -168,28 +171,33 @@ python dailytracker_ui.py
 
 ### Planned
 
+- [ ] Drag-and-drop habit reordering
+- [ ] Persistent notes until completed
+- [ ] Theme switching
+- [ ] Bottom status bar
 - [ ] Monthly Analytics
 - [ ] Completion Graphs (Matplotlib)
 - [ ] Longest Streak Statistics
 - [ ] Habit-wise Analytics
 - [ ] CSV Export
 - [ ] Settings Page
-
 ---
 
 # 📌 Version
 
-**Current Version:** `v1.0.1`
+**Current Version:** `v1.0.2`
 
 ### Recent Improvements
 
 - Migrated from MySQL to SQLite3.
 - Simplified project setup.
 - Improved startup performance.
-- Fixed streak restoration.
+- Fixed streak restoration after application restart.
 - Improved calendar synchronization.
-- Fixed month handling for February and 30-day months.
-- improved navigation through calendar
+- Correctly handles months with 28, 29, 30 and 31 days.
+- Added calendar navigation support.
+- Redesigned habit completion indicators (✓ / ✗).
+- Prevented completion indicators before a habit's creation date.
 - General UI and UX improvements.
 
 ---

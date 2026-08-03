@@ -176,7 +176,7 @@ class DailyTracker(QWidget):
         if success:
             self.habit_list.clear()
             self.habits=habitlist
-            for habit_id,habit in habitlist:
+            for habit_id,habit,created_at in habitlist:
                 item=QListWidgetItem(f"● {habit}")
                 item.setData(Qt.UserRole,habit_id)
                 self.habit_list.addItem(item)
@@ -190,7 +190,7 @@ class DailyTracker(QWidget):
             item=QListWidgetItem(f"● {habit_name}")
             item.setData(Qt.UserRole,habit_id)
             self.habit_list.addItem(item)
-            self.habits.append((habit_id,habit_name))
+            self.habits.append((habit_id,habit_name,QDate.currentDate().toPyDate))
             self.buildHabitTable()
             self.loadCompletions()
             self.habit_name.clear()
@@ -218,7 +218,7 @@ class DailyTracker(QWidget):
         if not success:
             print(f"Error loading Completions:{error}")
             return
-        habit_id_to_row={habit_id:row for row,(habit_id,_)in enumerate(self.habits)}
+        habit_id_to_row={habit_id:row for row,(habit_id,_,_)in enumerate(self.habits)}
         self.month_completions:set={}
         for habit_id,log_date,completed in rows:
             if habit_id not in habit_id_to_row:
@@ -400,7 +400,7 @@ class DailyTracker(QWidget):
         self.note_hbox.addStretch()
         self.notes_layout.addLayout(self.note_hbox)
         self.notes_box=QTextEdit()
-        self.notes_box.setPlaceholderText("Write Today's Notes...")
+        self.notes_box.setPlaceholderText("What's on your mind today...")
         self.notes_layout.addWidget(self.notes_box)
         self.save_btn=QPushButton(" Save Changes")
         self.set_btn_icon(self.save_btn,"./python/dailytracker/save.svg")
@@ -825,25 +825,36 @@ class DailyTracker(QWidget):
                            QCheckBox::indicator{
                            width:18px;
                            height:18px;
-                           border:2px solid #505050;
+                           border:2px solid rgba(220,38,38,150);
                            border-radius:4px;
-                           background-color:#1E1E1E;
+                           background-color:rgba(220,38,38,55);
+                           image:url("./python/dailytracker/cross.svg");
                            }
                            QCheckBox::indicator:hover{
-                           border:2px solid #3B82F6;
-                           background-color:#2B2B2B;
+                           border:2px solid rgba(239,68,68,200);
+                           background-color:rgba(239,68,68,80);
                            }
                            QCheckBox::indicator:pressed{
-                           background-color:#353535;
+                           background-color:rgba(230,68,68,90);
                            }
                            QCheckBox::indicator:checked{
-                           background-color:#3B82F6;
-                           border:2px solid #3B82F6;
+                           background-color:rgba(22,163,74,90);
+                           border:2px solid rgba(22,163,74,220);
                            image:url("./python/dailytracker/check.svg");
                            }
                            QCheckBox::indicator:checked:hover{
-                           background-color:#60A5FA;
-                           border:2px solid #60A5FA;
+                           background-color:rgba(34,197,94,110);
+                           border:2px solid rgba(34,197,94,225);
+                           }
+                           QCheckBox::indicator[future ="true"]{
+                           background-color:#252525;
+                           border:2px solid #3A3A3A;
+                           image:none;
+                           }
+                           QCheckBox::indicator[before_creation ="true"]{
+                           background-color:#252525;
+                           border:2px solid #3A3A3A;
+                           image:none;
                            }
                            """
                            )
@@ -889,7 +900,7 @@ class DailyTracker(QWidget):
         if not success:
             print(f"Error loading displayed Completions : {error}")
             return
-        habit_id_to_row={habit_id:row for row,(habit_id,_) in enumerate(self.habits)}
+        habit_id_to_row={habit_id:row for row,(habit_id,_,_) in enumerate(self.habits)}
         for habit_id,log_date,completed in rows:
             if habit_id not in habit_id_to_row: continue
             row=habit_id_to_row[habit_id]
@@ -914,7 +925,7 @@ class DailyTracker(QWidget):
         self.habit_table.setEditTriggers(QTableWidget.NoEditTriggers)
         header=["Habits"]
         self.habit_table.setHorizontalHeaderLabels(header)
-        for row,(habit_id,habit) in enumerate(self.habits):
+        for row,(habit_id,habit,_) in enumerate(self.habits):
             item=QTableWidgetItem(habit)
             item.setData(Qt.UserRole,habit_id)
             self.habit_table.setItem(row,0,item)
@@ -924,18 +935,23 @@ class DailyTracker(QWidget):
         self.task_table.setHorizontalHeaderLabels(headers)
         today=QDate.currentDate().day()-1
         today_qdate=QDate().currentDate()
-        for row,(habit_id,habit_name) in enumerate(self.habits):
+        for row,(habit_id,habit_name,created_at) in enumerate(self.habits):
             for col in range(days):
                 chk_box=QCheckBox()
                 chk_box.setFixedSize(22,22)
                 col_date=QDate(date.year(),date.month(),col+1).toPyDate()
-                if col_date== today_qdate:
+                if col_date<created_at:
+                    chk_box.setEnabled(False)
+                    chk_box.setProperty("before_creation",True)
+                elif col_date== today_qdate:
                     chk_box.setCursor(Qt.PointingHandCursor)
                     chk_box.stateChanged.connect(
                         lambda state,hid=habit_id,d=col_date:self.onHabitToggled(hid,d,state)
                     )
                 else:
                     chk_box.setEnabled(False)
+                    if col_date > today_qdate:
+                        chk_box.setProperty("future",True)
                 containter=QWidget()
                 #containter.setFixedSize(32,32)
                 layout=QHBoxLayout((containter))
@@ -977,7 +993,7 @@ class DailyTracker(QWidget):
             self.habit_error.setText("Habit name should not exceed 50 characters")
             self.habit_error.setVisible(True)
             return
-        for _,habit_name in self.habits:
+        for _,habit_name,_ in self.habits:
             if habit_name.lower()==habit.lower():
                 self.habit_error.setText(f"{habit} already exists")
                 self.habit_error.setVisible(True)
