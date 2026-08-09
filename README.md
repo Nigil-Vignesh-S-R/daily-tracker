@@ -86,7 +86,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ## 🎨 Modern Desktop Interface
 
-- Modern dark theme.
+- Modern dark & light themes.
 - Custom SVG icons.
 - Interactive calendar.
 - Progress dashboard.
