@@ -139,6 +139,7 @@ python dailytracker_ui.py
 # 📷 Screenshots
 
 <img width="1497" height="932" alt="image" src="https://github.com/user-attachments/assets/fe4d40ba-2753-4ed3-9f8b-f56dcbdd29c7" />
+<img width="1497" height="956" alt="image" src="https://github.com/user-attachments/assets/ca59d690-545d-44a7-8d4b-13ed8af6aac6" />
 
 
 
@@ -169,13 +170,13 @@ python dailytracker_ui.py
 - [x] Current Streak
 - [x] Daily Notes
 - [x] Responsive Database Operations
+- [x] Theme switching
+- [x] Bottom status bar
 
 ### Planned
 
 - [ ] Drag-and-drop habit reordering
 - [ ] Persistent notes until completed
-- [ ] Theme switching
-- [ ] Bottom status bar
 - [ ] Monthly Analytics
 - [ ] Completion Graphs (Matplotlib)
 - [ ] Longest Streak Statistics
@@ -186,7 +187,7 @@ python dailytracker_ui.py
 
 # 📌 Version
 
-**Current Version:** `v1.0.2`
+**Current Version:** `v1.0.3`
 
 ### Recent Improvements
 
@@ -200,6 +201,7 @@ python dailytracker_ui.py
 - Redesigned habit completion indicators (✓ / ✗).
 - Prevented completion indicators before a habit's creation date.
 - General UI and UX improvements.
+- Enabled Theme Toggling
 
 ---
 
