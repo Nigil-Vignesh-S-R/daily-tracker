@@ -6,127 +6,12 @@ from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,
                              QProgressBar,QTextEdit,QTableWidget,QHeaderView,
                              QTableWidgetItem,QCheckBox,QListWidgetItem)
 from PyQt5.QtGui import QIcon,QTextCharFormat,QColor
-from PyQt5.QtCore import Qt,QSize,QDate,QThread,pyqtSignal,QEvent,QTimer
+from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime
+from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
+                    deleteHabitWorker,saveNoteWorker,getNoteWorker,
+                    markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,)
+from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
-class DBConnectWorker(QThread):
-    connected=pyqtSignal(bool,str)
-    def __init__(self,db:Database):
-        super().__init__()
-        self.db=db
-    def run(self):
-        try:
-            self.db.connect()
-            self.connected.emit(True,"")
-        except Exception as e:
-            self.connected.emit(False,str(e))
-class addHabitWorker(QThread):
-    completed=pyqtSignal(bool,str,int,str)
-    def __init__(self,db:Database,habit_name):
-        super().__init__()
-        self.db=db
-        self.habitName=habit_name
-    def run(self):
-        try:
-            new_id=self.db.add_habit(self.habitName)
-            if new_id:
-                self.completed.emit(True,"",new_id,self.habitName)
-            else:
-                self.completed.emit(False,"Failed to add Habit",0,self.habitName)
-        except Exception as e:
-            self.completed.emit(False,str(e),0,self.habitName)
-class getHabitWorker(QThread):
-    fetched=pyqtSignal(bool,str,list)
-    def __init__(self,db:Database):
-        super().__init__()
-        self.db=db
-    def run(self):
-        try:
-            habits=self.db.get_habits()
-            self.fetched.emit(True,"",habits)
-        except Exception as e:
-            self.fetched.emit(False,str(e),[])
-class deleteHabitWorker(QThread):
-    deleted=pyqtSignal(bool,str,int)
-    def __init__(self,db:Database,habit_id):
-        super().__init__()
-        self.db=db
-        self.habitID=habit_id
-    def run(self):
-        try:
-            success=self.db.delete_habit(self.habitID)
-            if success:
-                self.deleted.emit(True,"",self.habitID)
-            else:
-                self.deleted.emit(False,"Failed to delete habit",self.habitID)
-        except Exception as e:
-            self.deleted.emit(False,str(e),self.habitID)
-class saveNoteWorker(QThread):
-    completed=pyqtSignal(bool,str)
-    def __init__(self,db:Database,notes_text):
-        super().__init__()
-        self.db=db
-        self.notes_text=notes_text
-    def run(self):
-        try:
-            success=self.db.save_note(self.notes_text)
-            if success:
-                self.completed.emit(True,"")
-            else:
-                self.completed.emit(False,"Failed to save note")
-        except Exception as e:
-            self.completed.emit(False,str(e))
-class getNoteWorker(QThread):
-    fetched=pyqtSignal(bool,str,str)
-    def __init__(self,db:Database):
-        super().__init__()
-        self.db=db
-    def run(self):
-        try:
-            note_text=self.db.get_note()
-            self.fetched.emit(True,"",note_text)
-        except Exception as e:
-            self.fetched.emit(False,str(e),"")
-class markCompleteWorker(QThread):
-    completed=pyqtSignal(bool,str)
-    def __init__(self,db:Database,habit_id,log_date,is_completed):
-        super().__init__()
-        self.db=db
-        self.habitID=habit_id
-        self.logDate=log_date
-        self.isCompleted=is_completed
-    def run(self):
-        try:
-            success=self.db.mark_completed(self.habitID,self.isCompleted,self.logDate)
-            if success:
-                self.completed.emit(True,"")
-            else:
-                self.completed.emit(False,"Failed to Save Completion")
-        except Exception as e :
-            self.completed.emit(False,str(e))
-class getCompletionsWorker(QThread):
-    fetched=pyqtSignal(bool,str,list)
-    def __init__(self,db:Database,year,month):
-        super().__init__()
-        self.db=db
-        self.year=year
-        self.month=month
-    def run(self):
-        try:
-            rows=self.db.get_month_completion(self.year,self.month)
-            self.fetched.emit(True,"",rows)
-        except Exception as e:
-            self.fetched.emit(False,str(e),[])
-class getCompleteDaysWorker(QThread):
-    fetched=pyqtSignal(bool,str, list)
-    def __init__(self,db:Database):
-        super().__init__()
-        self.db=db
-    def run(self):
-        try:
-            dates=self.db.get_completed_dates()
-            self.fetched.emit(True,"",dates)
-        except Exception as e:
-            self.fetched.emit(False,str(e),[])
 class DailyTracker(QWidget):
     def __init__(self):
         super().__init__()
@@ -136,7 +21,12 @@ class DailyTracker(QWidget):
         self.db=Database()
         self.month_completions:set={}
         self.db_ready=False
+        self.is_dark_theme=True
         self.initUI()
+        self.clock_timer=QTimer(self)
+        self.clock_timer.timeout.connect(self.updateClock)
+        self.clock_timer.start(1000)
+        self.updateClock()
         self.styleCalendarHeader()
         self.dimAdjacentMonths()
         self.DBThread=DBConnectWorker(self.db)
@@ -144,6 +34,10 @@ class DailyTracker(QWidget):
         self.DBThread.start()
         self.DBThread.finished.connect(self.DBThread.deleteLater) 
         QApplication.instance().installEventFilter(self)
+    def updateClock(self):
+        now=QDate.currentDate()
+        current_time=QTime.currentTime().toString("hh:mm AP")
+        self.clock_label.setText(current_time)
     def eventFilter(self, object, event):
         if event.type() == QEvent.MouseButtonPress:
             clicked_Widget=QApplication.widgetAt(event.globalPos())
@@ -190,7 +84,7 @@ class DailyTracker(QWidget):
             item=QListWidgetItem(f"● {habit_name}")
             item.setData(Qt.UserRole,habit_id)
             self.habit_list.addItem(item)
-            self.habits.append((habit_id,habit_name,QDate.currentDate().toPyDate))
+            self.habits.append((habit_id,habit_name,QDate.currentDate().toPyDate()))
             self.buildHabitTable()
             self.loadCompletions()
             self.habit_name.clear()
@@ -237,7 +131,10 @@ class DailyTracker(QWidget):
             self.updateStats()
     def styleCalendarHeader(self):
         weekDay_Format=QTextCharFormat()
-        weekDay_Format.setForeground(QColor("#FBB03B"))
+        if self.is_dark_theme:
+            weekDay_Format.setForeground(QColor("#FBB03B"))
+        else:
+            weekDay_Format.setForeground(QColor("#A66A00"))
         for day in[Qt.Monday,Qt.Tuesday,Qt.Wednesday,Qt.Thursday,Qt.Friday]:
             self.calendar.setWeekdayTextFormat(day,weekDay_Format)
     def dimAdjacentMonths(self):
@@ -246,7 +143,10 @@ class DailyTracker(QWidget):
         dim_format=QTextCharFormat()
         dim_format.setForeground(QColor("#4A4A4A"))
         normal_format=QTextCharFormat()
-        normal_format.setForeground(QColor("#FBB03B"))
+        if self.is_dark_theme:
+            normal_format.setForeground(QColor("#FBB03B"))
+        else:
+            normal_format.setForeground(QColor("#A66A00"))
         first_of_month=QDate(current_year,current_month,1)
         grid_start=first_of_month.addDays(-(first_of_month.dayOfWeek()-1))
         for i in range(42):
@@ -256,6 +156,9 @@ class DailyTracker(QWidget):
             else:
                 self.calendar.setDateTextFormat(date,normal_format)
     def initUI(self):
+        vbox=QVBoxLayout()
+        vbox.setContentsMargins(0,0,0,0)
+        vbox.setSpacing(0)
         #main hbox for 3 frames
         self.hbox=QHBoxLayout()
         #creating frames
@@ -268,21 +171,26 @@ class DailyTracker(QWidget):
         self.hbox.addWidget(self.right_frame,1)
         self.hbox.setSpacing(20)
         self.hbox.setContentsMargins(20,20,20,20)
-        self.setLayout(self.hbox)
         #building layouts and adding to respective frames
         self.buildLeftLayout()
         self.buildCentralLayout()
         self.buildRightLayout()
+        self.buildBottombar()
+
+        vbox.addLayout(self.hbox,1)
+        vbox.addWidget(self.bottom_bar)
+        self.setLayout(vbox)
         #styling
         self.setObjectnames()
-        self.addStyles()
+        self.applyStyles()
+        self.refreshIcon()
         self.updateStats()
     def buildLeftLayout(self):
         self.left_layout=QVBoxLayout()
         #habit header
         self.habit_header = QHBoxLayout()
         self.habit_header.setSpacing(8)
-        self.habit_icon=self.seticon("./python/dailytracker/habit.svg",28)
+        self.habit_icon=self.seticon("./python/dailytracker/habit.svg",28)    
         self.habit_label=QLabel("Habits List")
         self.habit_header.addWidget(self.habit_icon)
         self.habit_header.addWidget(self.habit_label)
@@ -351,7 +259,7 @@ class DailyTracker(QWidget):
         #task layout
         self.task_layout=QVBoxLayout()
         self.task_header=QHBoxLayout()
-        self.task_header.addSpacing(8)
+        self.task_header.addSpacing(8)    
         self.task_icon=self.seticon("./python/dailytracker/tasks.svg",35)
         self.task_label=QLabel("Progression of Habits")
         self.task_header.addWidget(self.task_icon)
@@ -391,7 +299,7 @@ class DailyTracker(QWidget):
         #notes layout
         self.notes_layout=QVBoxLayout()
         self.notes_layout.setContentsMargins(15,15,15,15)
-        self.note_hbox=QHBoxLayout()
+        self.note_hbox=QHBoxLayout()    
         self.note_icon=self.seticon("./python/dailytracker/notebook-pen-icon.svg",28)
         self.notes_header=QLabel("Today's Notes")
         self.note_hbox.setSpacing(8)
@@ -423,7 +331,7 @@ class DailyTracker(QWidget):
         self.calendar_frame=QFrame()
         self.calendar_layout=QVBoxLayout()
         self.calendar_header=QHBoxLayout()
-        self.calendar_header.setSpacing(8)
+        self.calendar_header.setSpacing(8)    
         self.calendar_icon=self.seticon("./python/dailytracker/cal icon.svg",35)
         self.calendar_label=QLabel("Calendar")
         self.calendar_header.addWidget(self.calendar_icon)
@@ -431,12 +339,12 @@ class DailyTracker(QWidget):
         self.calendar_header.addStretch()
         self.calendar=QCalendarWidget()
         self.calendar.currentPageChanged.connect(self.updateTable)
-        prev_btn=self.calendar.findChild(QToolButton,"qt_calendar_prevmonth")
-        next_btn=self.calendar.findChild(QToolButton,"qt_calendar_nextmonth")
-        prev_btn.setIcon(QIcon("./python/dailytracker/left_chevron.svg"))
-        next_btn.setIcon(QIcon("./python/dailytracker/right_chevron.svg"))
-        prev_btn.setIconSize(QSize(18,18))
-        next_btn.setIconSize(QSize(18,18))
+        self.prev_btn=self.calendar.findChild(QToolButton,"qt_calendar_prevmonth")
+        self.next_btn=self.calendar.findChild(QToolButton,"qt_calendar_nextmonth")
+        self.prev_btn.setIcon(QIcon("./python/dailytracker/left_chevron.svg"))
+        self.next_btn.setIcon(QIcon("./python/dailytracker/right_chevron.svg"))
+        self.prev_btn.setIconSize(QSize(18,18))
+        self.next_btn.setIconSize(QSize(18,18))
         self.calendar.setGridVisible(False)
         self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
         self.calendar.setFirstDayOfWeek(Qt.Monday)
@@ -449,7 +357,10 @@ class DailyTracker(QWidget):
         self.statvbox=QVBoxLayout() 
         self.stats_header=QHBoxLayout()
         self.stats_header.addSpacing(8)
-        self.stats_icon=self.seticon("./python/dailytracker/bar.svg",35)
+        if self.is_dark_theme:
+            self.stats_icon=self.seticon("./python/dailytracker/bar.svg",35)
+        else:
+            self.stats_icon=self.seticon("./python/dailytracker/barL.svg",35)
         self.stats_label=QLabel("Stats")
         self.stats_header.addWidget(self.stats_icon)
         self.stats_header.addWidget(self.stats_label)
@@ -533,335 +444,32 @@ class DailyTracker(QWidget):
         self.today_label.setObjectName("todayLabel")
         self.save_btn.setObjectName("saveBtn")
         self.notes_header.setObjectName("notesHeader")
-    def addStyles(self):
-        #styling
-        self.setStyleSheet("""
-                           QWidget{
-                           background-color:#121212;
-                           font-family:Segoe UI;
-                           }
-                           QFrame{
-                           background-color:#1E1E1E;
-                           border-radius:15px;
-                           }
-                           QFrame#inner_frames{
-                           background-color:#252525;
-                           border-radius:10px;
-                           padding-top:15px;
-                           padding-bottom:15px;
-                           }
-                           QFrame#centerFrame{
-                           border:2px solid #3B82F6;
-                           }
-                           QLabel{
-                           background:transparent;
-                           color:#FBB03B;
-                           font-size:24px;
-                           }
-                           QLabel#sideHeaders{
-                           min-height:50px;
-                           }
-                           QLabel#statName{
-                           color:#C5C5C5;
-                           font-size:18px;
-                           font-weight:500;
-                           }
-                           QLabel#statValue{
-                           color:#B8B8B8;
-                           font-size:20px;
-                           font-weight:500;
-                           }
-                           QLabel#progress{
-                           color:#3B82F6;
-                           font-weight:500;
-                           font-size:20px;
-                           }
-                           QLabel#streak{
-                           color:#FBB03B;
-                           font-weight:500;
-                           font-size:20px;
-                           }
-                           QLabel#streakDays{
-                           color:#FBB03B;
-                           font-size:50px;
-                           font-weight:400;
-                           font-style:italic;
-                           }
-                           QLabel#daysLabel{
-                           color:#E5E5E5;
-                           font-size:22px;
-                           padding-top:18px;
-                           }
-                           QLabel#keepLabel{
-                           color:#C5C5C5;
-                           font-size:18px;
-                           padding-left:30px;
-                           }
-                           QLabel#percentLabel{
-                           color:#3B82F6;
-                           font-size:24px;
-                           font-weight:450;
-                           }
-                           QLabel#finishedLabel{
-                           color:#3B82F6;
-                           font-size:24px;
-                           font-weight:450;
-                           }
-                           QLabel#dateLabel{
-                           color:#C5C5C5;
-                           font-size:20px;
-                           }
-                           QLabel#todayLabel{
-                           color:#FBB03B;
-                           font-size:34px;
-                           font-weight:460;
-                           }
-                           QLabel#notesHeader{
-                           color:#FBB03B;
-                           font-size:24px;
-                           font-weight:500;
-                           }
-                           QLabel#errorLabel{
-                           color:#EF4444;
-                           font-size:14px;
-                           }
-                           QTextEdit{
-                           background-color:#1E1E1E;
-                           color:#E5E5E5;
-                           border:none;
-                           border-radius:10px;
-                           padding:10px;
-                           selection-background-color:#3B82F6;
-                           font-size:18px;
-                           }
-                           QTextEdit::focus{
-                           border:2px solid #3B82F6;
-                           }
-                           QListWidget{
-                           background-color:#252525;
-                           color:#FBB03B;
-                           border:none;
-                           border-radius:10px;
-                           font-size:18px;
-                           padding:10px;
-                           }
-                           QListWidget::item{
-                           padding:10px;
-                           min-height:25px;
-                           }
-                           QListWidget::item:selected{
-                           background-color:#3B82F6;
-                           color:white;
-                           border-radius:6px;
-                           }
-                           QProgressBar{
-                           border:none;
-                           border-radius:6px;
-                           background:#363636;
-                           height:12px;
-                           }
-                           QProgressBar::chunk{
-                           background:#3B82F6;
-                           border-radius:6px;
-                           }
-                           QLineEdit{
-                           background-color:#252525;
-                           color:#FBB03B;
-                           font-size:18px;
-                           min-height:25px;
-                           border:none;
-                           border-radius:10px;
-                           padding:8px;
-                           }
-                           QLineEdit:focus{
-                           border:2px solid #3B82F6;
-                           }
-                           QCalendarWidget QWidget{
-                           background-color:#252525;
-                           }
-                           QCalendarWidget QToolButton{
-                           background-color:#252525;
-                           color:#FBB03B;
-                           border-radius:6px;
-                           border:none;
-                           padding:4px;
-                           font-size:20px;
-                           font-weight:600;
-                           }
-                           QCalendarWidget QToolButton:hover{
-                           background-color:#333333;
-                           }
-                           QCalendarWidget QToolButton:pressed{
-                           background-color:#404040;
-                           }
-                           QCalendarWidget QMenu{
-                           background-color:#252525;
-                           color:#FBB03B;
-                           }
-                           QCalendarWidget QAbstractItemView{
-                           selection-background-color:#3B82F6;
-                           selection-color:white;
-                           }
-                           QCalendarWidget QTableView{
-                           background-color:#252525;
-                           alternate-background-color:#252525;
-                           }
-                           QCalendarWidget QHeaderView{
-                           background-color:#252525;
-                           }
-                           QCalendarWidget QTableView QHeaderView::section{
-                           background-color:#252525;
-                           color:#FBB03B;
-                           padding:6px;
-                           border:none;
-                           }
-                           QPushButton{
-                           border:none;
-                           border-radius:10px;
-                           padding:8px;
-                           font-size:15px;
-                           min-height:40px;
-                           }
-                           QPushButton#saveBtn{
-                           background-color:#16A34A;
-                           color:white;
-                           font-size:18px;
-                           font-weight:450;
-                           }
-                           QPushButton#saveBtn:hover{
-                           background-color:#22C55E;
-                           }
-                           QPushButton#saveBtn:pressed{
-                           background-color:#15803D;
-                           }
-                           QPushButton#add_habit{
-                           background-color:#3B82F6;
-                           color:white;
-                           }
-                           QPushButton#delete_habit{
-                           background-color:#B91C1C;
-                           color:white;
-                           }
-                           QPushButton#add_habit:hover{
-                           background-color:#60A5FA;
-                           }
-                           QPushButton#add_habit:pressed{
-                           background-color:#2563EB;
-                           }
-                           QPushButton#delete_habit:hover{
-                           background-color:#DC2626;
-                           }
-                           QPushButton#delete_habit:pressed{
-                           background-color:#991B1B;
-                           }
-                           QTableWidget{
-                           background-color:#1E1E1E;
-                           color:#E5E5E5;
-                           border:none;
-                           border-radius:10px;
-                           gridline-color:#2F2F2F;
-                           font-size:16px;
-                           selection-background-color:transparent;
-                           outline:none;
-                           }
-                           QHeaderView::section{
-                           background-color:#252525;
-                           color:#FBB03B;
-                           border:1px solid #1E1E1E;
-                           padding:8px;
-                           font-size:16px;
-                           font-weight:450;
-                           }
-                           QTableWidget::item:selected{
-                           background-color:#3B82F6;
-                           }
-                           QScrollBar:horizontal{
-                           background:rgb(0,0,0);
-                           height:12px;
-                           border:none;
-                           border-radius:6px;
-                           }
-                           QScrollBar::handle:horizontal{
-                           background:#3B82F6;
-                           border-radius:6px;
-                           min-width:12px;
-                           }
-                           QScrollBar::handle:horizontal:hover{
-                           background:#60A5FA;
-                           }
-                           QScrollBar::add-line:horizontal,
-                           QScrollBar::sub-line:horizontal{
-                           width:0px;
-                           }
-                           QScrollBar::add-page:horizontal,
-                           QScrollBar::sub-page:horizontal{
-                           background:none;
-                           }
-                           QScrollBar:vertical{
-                           background:rgb(0,0,0);
-                           width:12px;
-                           border:none;
-                           border-radius:6px;
-                           }
-                           QScrollBar::handle:vertical{
-                           background:#3B82F6;
-                           border-radius:6px;
-                           min-height:12px;
-                           }
-                           QScrollBar::handle:vertical:hover{
-                           background:#60A5FA;
-                           }
-                           QScrollBar::add-line:vertical,
-                           QScrollBar::sub-line:vertical{
-                           height:0px;
-                           }
-                           QScrollBar::add-page:vertical,
-                           QScrollBar::sub-page:vertical{
-                           background:transparent;
-                           }
-                           QCheckBox{
-                           background:transparent;
-                           }
-                           QCheckBox::indicator{
-                           width:18px;
-                           height:18px;
-                           border:2px solid rgba(220,38,38,150);
-                           border-radius:4px;
-                           background-color:rgba(220,38,38,55);
-                           image:url("./python/dailytracker/cross.svg");
-                           }
-                           QCheckBox::indicator:hover{
-                           border:2px solid rgba(239,68,68,200);
-                           background-color:rgba(239,68,68,80);
-                           }
-                           QCheckBox::indicator:pressed{
-                           background-color:rgba(230,68,68,90);
-                           }
-                           QCheckBox::indicator:checked{
-                           background-color:rgba(22,163,74,90);
-                           border:2px solid rgba(22,163,74,220);
-                           image:url("./python/dailytracker/check.svg");
-                           }
-                           QCheckBox::indicator:checked:hover{
-                           background-color:rgba(34,197,94,110);
-                           border:2px solid rgba(34,197,94,225);
-                           }
-                           QCheckBox::indicator[future ="true"]{
-                           background-color:#252525;
-                           border:2px solid #3A3A3A;
-                           image:none;
-                           }
-                           QCheckBox::indicator[before_creation ="true"]{
-                           background-color:#252525;
-                           border:2px solid #3A3A3A;
-                           image:none;
-                           }
-                           """
-                           )
+    def applyStyles(self):
+        if self.is_dark_theme:
+            self.applyDarkTheme()
+        else:
+            self.applyLightTheme()
+    def applyLightTheme(self):
+        #light theme styling
+        self.setStyleSheet(get_light_stylesheet())
+    def applyDarkTheme(self):
+        # dark theme styling
+        self.setStyleSheet(get_dark_stylesheet())
     def seticon(self,path:str,size:int):
         label=QLabel()
         label.setPixmap(QIcon(path).pixmap(size,size))
-        return label     
+        return label 
+    def update_icon(self,label:QLabel,path:str,size:int):
+        label.setPixmap(QIcon(path).pixmap(size,size))
+    def refreshIcon(self):
+        suffix="" if self.is_dark_theme else "L"
+        self.update_icon(self.habit_icon,f"./python/dailytracker/habit{suffix}.svg",28)
+        self.update_icon(self.task_icon,f"./python/dailytracker/tasks{suffix}.svg",35)
+        self.update_icon(self.note_icon,f"./python/dailytracker/notebook-pen-icon{suffix}.svg",28)
+        self.update_icon(self.calendar_icon,f"./python/dailytracker/cal icon{suffix}.svg",35)
+        self.prev_btn.setIcon(QIcon(f"./python/dailytracker/left_chevron{suffix}.svg"))
+        self.next_btn.setIcon(QIcon(f"./python/dailytracker/right_chevron{suffix}.svg"))
+        self.update_icon(self.stats_icon,f"./python/dailytracker/bar{suffix}.svg",35)  
     def set_btn_icon(self,button:QPushButton,path:str,size=22):
         button.setIcon(QIcon(path))
         button.setIconSize(QSize(size,size))
@@ -962,7 +570,7 @@ class DailyTracker(QWidget):
                 layout.addWidget(chk_box)
                 layout.addStretch()
                 if col_date==today_qdate:
-                    containter.setStyleSheet("""background-color:rgba(59,130,246,40);""")
+                    containter.setStyleSheet("""background-color:rgba(59,130,246,30);""")
                 self.task_table.setCellWidget(row,col,containter)
         for col in range(days):
             self.task_table.setColumnWidth(col,32)
@@ -1088,6 +696,40 @@ class DailyTracker(QWidget):
             streak+=1
             day=day - timedelta(days=1)
         return streak 
+    def buildBottombar(self):
+        self.bottom_bar = QFrame()
+        self.bottom_bar.setObjectName("bottomBar")
+        self.bottom_bar.setFixedHeight(36)
+        bar_layout=QHBoxLayout()
+        bar_layout.setContentsMargins(15,0,15,0)
+        self.bottom_icon=self.seticon("./python/dailytracker/calendar.svg",35)
+        self.app_label=QLabel("    Daily Tracker  •  Stay Consistent, Achieve Greatness!")
+        self.app_label.setObjectName("bottomBarText")
+        self.theme_btn=QPushButton()
+        self.theme_btn.setObjectName("themeToggleBtn")
+        self.theme_btn.setFixedSize(40,40)
+        self.set_btn_icon(self.theme_btn,"./python/dailytracker/sun.svg",18)
+        self.theme_btn.setCursor(Qt.PointingHandCursor)
+        self.theme_btn.clicked.connect(self.toggleTheme)
+
+        self.clock_label=QLabel()
+        self.clock_label.setObjectName("bottomBarText")
+        bar_layout.addWidget(self.bottom_icon)
+        bar_layout.addWidget(self.app_label)
+        bar_layout.addStretch()
+        bar_layout.addWidget(self.theme_btn)
+        bar_layout.addWidget(self.clock_label)
+        self.bottom_bar.setLayout(bar_layout)
+    def toggleTheme(self):
+        self.is_dark_theme=not self.is_dark_theme
+        if self.is_dark_theme:
+            self.set_btn_icon(self.theme_btn,"./python/dailytracker/sun.svg")
+        else:
+            self.set_btn_icon(self.theme_btn,"./python/dailytracker/moon.svg")
+        self.applyStyles()
+        self.dimAdjacentMonths()
+        self.refreshIcon()
+        self.styleCalendarHeader()
 if __name__ == "__main__":
     app=QApplication(sys.argv)
     window = DailyTracker()
