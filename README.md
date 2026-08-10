@@ -156,7 +156,7 @@ python dailytracker_ui.py
 - ✅ Daily Notes
 - ✅ Responsive UI using QThread
 - ✅ SQLite Database
-- ✅ Modern Dark Theme
+- ✅ Modern Dark & Light Theme
 
 ---
 
