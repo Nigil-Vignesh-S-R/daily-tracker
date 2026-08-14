@@ -53,7 +53,16 @@ class DailyTracker(QWidget):
         return super().eventFilter(object,event)
     def on_db_connected(self,success,error):
         if success:
-            #print("DB Ready")
+            saved_theme=self.db.get_setting("theme","dark")
+            self.is_dark_theme=(saved_theme=="dark")
+            self.applyStyles()
+            self.refreshIcon()
+            if self.is_dark_theme:
+                self.set_btn_icon(self.theme_btn,"./python/dailytracker/sun.svg")
+            else:
+                self.set_btn_icon(self.theme_btn,"./python/dailytracker/moon.svg")
+            self.dimAdjacentMonths()
+            self.styleCalendarHeader()
             self.habits_thread=getHabitWorker(self.db)
             self.habits_thread.fetched.connect(self.habitFetched)
             self.habits_thread.finished.connect(self.habits_thread.deleteLater)
@@ -730,6 +739,7 @@ class DailyTracker(QWidget):
         self.dimAdjacentMonths()
         self.refreshIcon()
         self.styleCalendarHeader()
+        self.db.save_setting("theme","dark" if self.is_dark_theme else "light")
 if __name__ == "__main__":
     app=QApplication(sys.argv)
     window = DailyTracker()

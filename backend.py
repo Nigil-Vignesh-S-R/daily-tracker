@@ -46,6 +46,10 @@ class Database:
 
                                     UNIQUE (habit_id,date),
                                     FOREIGN KEY (habit_id) REFERENCES habits(habit_id) ON DELETE CASCADE
+                                );
+                                CREATE TABLE IF NOT EXISTS settings(
+                                key TEXT PRIMARY KEY,
+                                value TEXT NOT NULL
                                 );""")
         self.connection.commit()
     def add_habit(self,habit_name):
@@ -135,6 +139,26 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error Fetching Completed Dates: {str(e)}")
             return []
+    def get_setting(self,key,default=None):
+        try:
+            query="""SELECT value FROM settings WHERE key=?"""
+            self.cursor.execute(query,(key,))
+            row=self.cursor.fetchone()
+            return row[0] if row else default
+        except sqlite3.Error as e:
+            print(f"Error fetching setting: {str(e)}")
+            return default
+    def save_setting(self,key,value):
+        try:
+            query="""INSERT INTO settings(key,value)
+                     VALUES(?,?)
+                     ON CONFLICT(key) DO UPDATE SET value=excluded.value"""
+            self.cursor.execute(query,(key,value))
+            self.connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error saving setting: {str(e)}")
+            return False
     def close_connection(self):
         if self.cursor:
             self.cursor.close()
