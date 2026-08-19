@@ -119,3 +119,18 @@ class getCompleteDaysWorker(QThread):
             self.fetched.emit(True,"",dates)
         except Exception as e:
             self.fetched.emit(False,str(e),[])
+class updateOrderWorker(QThread):
+    completed=pyqtSignal(bool,str)
+    def __init__(self,db:Database,ordered_ids):
+        super().__init__()
+        self.db=db
+        self.ordered_ids=ordered_ids
+    def run(self):
+        try:
+            success=self.db.update_habit_order(self.ordered_ids)
+            if success:
+                self.completed.emit(True,"")
+            else:
+                self.completed.emit(False,"Failed to save Habit order")
+        except Exception as e:
+            self.completed.emit(False,str(e))

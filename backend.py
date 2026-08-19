@@ -23,14 +23,37 @@ class Database:
             self.connection.execute("PRAGMA foreign_keys = ON")
             self.cursor=self.connection.cursor()
             self.create_tables()
+            self.backfill_sort_order()
         except sqlite3.Error as e:
             print(f"Connection error: {str(e)}")
+    def update_habit_order(self,ordered_habit_ids):
+        try:
+            for index,habit_id in enumerate(ordered_habit_ids):
+                self.cursor.execute("UPDATE habits SET sort_order=? WHERE habit_id=?",(index,habit_id))
+            self.connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error updating habit order: {str(e)}")
+            return False
+    def backfill_sort_order(self):
+        already_done=self.get_setting("sort_order_backfilled")
+        if already_done=="1":
+            return
+        self.cursor.execute("""SELECT COUNT(*) FROM habits WHERE sort_order = 0""")
+        if self.cursor.fetchone()[0]>0:
+            self.cursor.execute("""SELECT habit_id FROM habits ORDER BY habit_id""")
+            for index,(habit_id,) in enumerate(self.cursor.fetchall()):
+                self.cursor.execute("""UPDATE habits SET sort_order = ? WHERE habit_id=?""",
+                                    (index,habit_id))
+            self.connection.commit()
+        self.save_setting("sort_order_backfilled","1")
     def create_tables(self):
         self.cursor.executescript("""
                                 CREATE TABLE IF NOT EXISTS habits(
                                     habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     habit_name TEXT NOT NULL UNIQUE,
-                                    created_at DATE NOT NULL DEFAULT(DATE('now'))
+                                    created_at DATE NOT NULL DEFAULT(DATE('now')),
+                                    sort_order INTEGER NOT NULL DEFAULT 0
                                 );
                                 CREATE TABLE IF NOT EXISTS notes(
                                     note_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,15 +77,17 @@ class Database:
         self.connection.commit()
     def add_habit(self,habit_name):
         try:
-            query="""INSERT INTO habits (habit_name) VALUES(?)"""
-            self.cursor.execute(query,(habit_name,))
+            self.cursor.execute("SELECT COALESCE(MAX(sort_order),-1)+1 FROM habits")
+            next_order =self.cursor.fetchone()[0]
+            query="""INSERT INTO habits (habit_name,sort_order) VALUES(?,?)"""
+            self.cursor.execute(query,(habit_name,next_order))
             self.connection.commit()
             return self.cursor.lastrowid
         except sqlite3.Error as e:
             print(f"Error adding Habit:{str(e)}")
             return None
     def get_habits(self):
-        query="""SELECT habit_id,habit_name,created_at from habits ORDER BY habit_id"""
+        query="""SELECT habit_id,habit_name,created_at from habits ORDER BY sort_order"""
         self.cursor.execute(query)
         rows=self.cursor.fetchall()
         return [
@@ -159,8 +184,19 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error saving setting: {str(e)}")
             return False
+    def update_habits(self,habit_name,habit_id):
+        try:
+            query="""UPDATE habits SET habit_name=? where habit_id=?"""
+            self.cursor.execute(query,(habit_name,habit_id))
+            self.connection.commit()
+        except sqlite3.Error as e:
+            pass
     def close_connection(self):
         if self.cursor:
             self.cursor.close()
         if self.connection:
             self.connection.close()
+if __name__ == "__main__":
+    db=Database()
+    db.connect()
+    print(db.get_habits())

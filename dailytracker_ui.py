@@ -9,7 +9,8 @@ from PyQt5.QtGui import QIcon,QTextCharFormat,QColor
 from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
-                    markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,)
+                    markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
+                    updateOrderWorker)
 from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
 class DailyTracker(QWidget):
@@ -194,6 +195,23 @@ class DailyTracker(QWidget):
         self.applyStyles()
         self.refreshIcon()
         self.updateStats()
+    def onHabitsReordered(self):
+        new_ids=[]
+        for i in range(self.habit_list.count()):
+            item=self.habit_list.item(i)
+            habit_id=item.data(Qt.UserRole)
+            new_ids.append(habit_id)
+        id_to_habit={h[0]:h for h in self.habits}
+        self.habits=[id_to_habit[hid] for hid in new_ids]
+        self.reorder_thread=updateOrderWorker(self.db,new_ids)
+        self.reorder_thread.completed.connect(self.orderSaved)
+        self.reorder_thread.completed.connect(self.reorder_thread.deleteLater)
+        self.reorder_thread.start()
+        self.buildHabitTable()
+        self.loadCompletions()
+    def orderSaved(self,sucess,error):
+        if not sucess:
+            print(f"error Saving Habit order {error}")
     def buildLeftLayout(self):
         self.left_layout=QVBoxLayout()
         #habit header
@@ -206,6 +224,9 @@ class DailyTracker(QWidget):
         self.habit_header.addStretch()
         #the habit list
         self.habit_list=QListWidget()
+        self.habit_list.setDragDropMode(QListWidget.InternalMove)
+        self.habit_list.setDefaultDropAction(Qt.MoveAction)
+        self.habit_list.model().rowsMoved.connect(self.onHabitsReordered)
         self.add_habit=QPushButton("Add Habit")
         self.set_btn_icon(self.add_habit,"./python/dailytracker/add.svg")
         self.add_habit.clicked.connect(self.addHabit)
