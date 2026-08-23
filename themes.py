@@ -343,6 +343,35 @@ def get_dark_stylesheet():
                                font-size:18px;
                                font-weight:400px;
                                }
+                               QInputDialog{
+                               background-color:#1E1E1E;
+                               }
+                               QInputDialog QLabel{
+                               color:#E5E5E5;
+                               font-size:16px;
+                               }
+                               QInputDialog QLineEdit{
+                               background-color:#252525;
+                               color:#E5E5E5;
+                               border:1px solid #3A3A3A;
+                               border-radius:8px;
+                               padding:8px;
+                               font-size:16px;
+                               }
+                               QInputDialog QLineEdit:focus{
+                               border:2px solid #3B82F6;
+                               }
+                               QInputDialog QPushButton{
+                               background-color:#3B82F6;
+                               color:white;
+                               border-radius:8px;
+                               padding:6px 16px;
+                               min-height:30px;
+                               font-size:14px;
+                               }
+                               QInputDialog QPushButton:hover{
+                               background-color:#60A5FA;
+                               }
                                """
 def get_light_stylesheet():
     return """
@@ -702,5 +731,34 @@ def get_light_stylesheet():
                         color:#475569;
                         font-size:18px;
                         font-weight:400;
+                    }
+                    QInputDialog{
+                    background-color:#FFFFFF;
+                    }
+                    QInputDialog QLabel{
+                    color:#2B2B2B;
+                    font-size:16px;
+                    }
+                    QInputDialog QLineEdit{
+                    background-color:#F0F0F0;
+                    color:#2B2B2B;
+                    border:1px solid #DDDDDD;
+                    border-radius:8px;
+                    padding:8px;
+                    font-size:16px;
+                    }
+                    QInputDialog QLineEdit:focus{
+                    border:2px solid #3B82F6;
+                    }
+                    QInputDialog QPushButton{
+                    background-color:#3B82F6;
+                    color:white;
+                    border-radius:8px;
+                    padding:6px 16px;
+                    min-height:30px;
+                    font-size:14px;
+                    }
+                    QInputDialog QPushButton:hover{
+                    background-color:#60A5FA;
                     }
                     """

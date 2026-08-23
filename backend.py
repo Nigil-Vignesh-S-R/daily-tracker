@@ -189,8 +189,10 @@ class Database:
             query="""UPDATE habits SET habit_name=? where habit_id=?"""
             self.cursor.execute(query,(habit_name,habit_id))
             self.connection.commit()
+            return True
         except sqlite3.Error as e:
-            pass
+            print(f"Error Updating Habit name: {str(e)}")
+            return False
     def close_connection(self):
         if self.cursor:
             self.cursor.close()

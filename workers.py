@@ -134,3 +134,19 @@ class updateOrderWorker(QThread):
                 self.completed.emit(False,"Failed to save Habit order")
         except Exception as e:
             self.completed.emit(False,str(e))
+class updateHabitWorker(QThread):
+    completed=pyqtSignal(bool,str,int,str)
+    def __init__(self,db:Database,habit_id,new_name):
+        super().__init__()
+        self.db=db
+        self.habit_id=habit_id
+        self.new_name=new_name
+    def run(self):
+        try:
+            success=self.db.update_habits(self.new_name,self.habit_id)
+            if success:
+                self.completed.emit(True,"",self.habit_id,self.new_name)
+            else:
+                self.completed.emit(False,"Failed to rename Habit (name may already exist)",self.habit_id,self.new_name)
+        except Exception as e:
+            self.completed.emit(False,str(e),self.habit_id,self.new_name)

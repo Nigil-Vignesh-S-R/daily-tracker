@@ -4,13 +4,13 @@ from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,
                              QVBoxLayout,QLabel,QListWidget,QPushButton,
                              QLineEdit,QCalendarWidget,QGridLayout,QToolButton,
                              QProgressBar,QTextEdit,QTableWidget,QHeaderView,
-                             QTableWidgetItem,QCheckBox,QListWidgetItem)
+                             QTableWidgetItem,QCheckBox,QListWidgetItem,QInputDialog)
 from PyQt5.QtGui import QIcon,QTextCharFormat,QColor
 from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
                     markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
-                    updateOrderWorker)
+                    updateOrderWorker,updateHabitWorker)
 from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
 class DailyTracker(QWidget):
@@ -212,6 +212,54 @@ class DailyTracker(QWidget):
     def orderSaved(self,sucess,error):
         if not sucess:
             print(f"error Saving Habit order {error}")
+    def onRenameHabit(self,item:QListWidgetItem):
+        habit_id=item.data(Qt.UserRole)
+        old_name=item.text().replace("● ","").strip()
+        dialog=QInputDialog(self)
+        dialog.setWindowTitle("Rename Habit")
+        dialog.setLabelText("Enter New Name: ")
+        dialog.setTextValue(old_name)
+        dialog.setFixedSize(400,180)
+        ok=dialog.exec_()
+        new_name=dialog.textValue()
+        if not ok:
+            return
+        new_name=new_name.strip()
+        if not new_name:
+            self.habit_error.setText("Habit name cannot be empty")
+            self.habit_error.setVisible(True)
+            return
+        if new_name == old_name:
+            return
+        for _,existing,_ in self.habits:
+            if existing.lower() == new_name.lower():
+                self.habit_error.setText(f"A habit with {new_name} already Exists")
+                self.habit_error.setVisible(True)
+                return
+        self.rename_thread=updateHabitWorker(self.db,habit_id,new_name)
+        self.rename_thread.completed.connect(self.habitRenamed)
+        self.rename_thread.finished.connect(self.rename_thread.deleteLater)
+        self.rename_thread.start()
+    def habitRenamed(self,success,error,habit_id,new_name):
+        if not success:
+            self.habit_error.setText(f"Error: {error}")
+            self.habit_error.setVisible(True)
+            return
+        self.habit_error.setVisible(False)
+        updated_Habits=[]
+        for hid,name,created_at in self.habits:
+            if hid == habit_id:
+                updated_Habits.append((hid,new_name,created_at))
+            else:
+                updated_Habits.append((hid,name,created_at))
+        self.habits=updated_Habits
+        for i in range(self.habit_list.count()):
+            item = self.habit_list.item(i)
+            if item.data(Qt.UserRole) == habit_id:
+                item.setText(f"● {new_name}")
+                break
+        self.buildHabitTable()
+        self.loadCompletions()
     def buildLeftLayout(self):
         self.left_layout=QVBoxLayout()
         #habit header
@@ -227,6 +275,7 @@ class DailyTracker(QWidget):
         self.habit_list.setDragDropMode(QListWidget.InternalMove)
         self.habit_list.setDefaultDropAction(Qt.MoveAction)
         self.habit_list.model().rowsMoved.connect(self.onHabitsReordered)
+        self.habit_list.itemDoubleClicked.connect(self.onRenameHabit)
         self.add_habit=QPushButton("Add Habit")
         self.set_btn_icon(self.add_habit,"./python/dailytracker/add.svg")
         self.add_habit.clicked.connect(self.addHabit)
