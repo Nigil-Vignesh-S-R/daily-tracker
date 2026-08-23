@@ -139,8 +139,14 @@ python dailytracker_ui.py
 # 📷 Screenshots
 
 <img width="1497" height="951" alt="image" src="https://github.com/user-attachments/assets/0f3abb6f-9d05-448b-b82b-80f855d9d9d8" />
+**double clicks waking**
+<img width="1503" height="933" alt="image" src="https://github.com/user-attachments/assets/05993680-2f1c-4786-b6f1-267b466390b7" />
+<img width="1500" height="961" alt="image" src="https://github.com/user-attachments/assets/5e4f8313-a7f6-4bca-8d76-32ec40d85071" />
+**clicks ok/press enter**
+<img width="1499" height="968" alt="image" src="https://github.com/user-attachments/assets/cc661e86-b959-4f8a-b4dd-aba40b2431fa" />
 
-<img width="1497" height="956" alt="image" src="https://github.com/user-attachments/assets/ca59d690-545d-44a7-8d4b-13ed8af6aac6" />
+<img width="1497" height="962" alt="image" src="https://github.com/user-attachments/assets/9efc6e52-e42f-4655-bb34-60369c529eca" />
+
 
 
 
@@ -174,6 +180,7 @@ python dailytracker_ui.py
 - [x] Theme switching
 - [x] Bottom status bar
 - [x] Drag-and-drop habit reordering
+- [x] Renaming/Updating habit names 
 ### Planned
 
 - [ ] Persistent notes until completed
@@ -187,7 +194,7 @@ python dailytracker_ui.py
 
 # 📌 Version
 
-**Current Version:** `v1.0.4`
+**Current Version:** `v1.0.5`
 
 ### Recent Improvements
 
@@ -203,6 +210,7 @@ python dailytracker_ui.py
 - General UI and UX improvements.
 - Enabled Theme Toggling
 - Enabled Drag and Drop of Habits in the habits list(not the table)
+- Enabled Renaming of habits in the habit list(not the table)
 
 ---
 
