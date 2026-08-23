@@ -173,10 +173,9 @@ python dailytracker_ui.py
 - [x] Responsive Database Operations
 - [x] Theme switching
 - [x] Bottom status bar
-
+- [x] Drag-and-drop habit reordering
 ### Planned
 
-- [ ] Drag-and-drop habit reordering
 - [ ] Persistent notes until completed
 - [ ] Monthly Analytics
 - [ ] Completion Graphs (Matplotlib)
@@ -188,7 +187,7 @@ python dailytracker_ui.py
 
 # 📌 Version
 
-**Current Version:** `v1.0.3`
+**Current Version:** `v1.0.4`
 
 ### Recent Improvements
 
@@ -203,6 +202,7 @@ python dailytracker_ui.py
 - Prevented completion indicators before a habit's creation date.
 - General UI and UX improvements.
 - Enabled Theme Toggling
+- Enabled Drag and Drop of Habits in the habits list(not the table)
 
 ---
 
