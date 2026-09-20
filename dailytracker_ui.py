@@ -1,12 +1,12 @@
 import sys
 from datetime import timedelta
-from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,
+from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,QStackedWidget,
                              QVBoxLayout,QLabel,QListWidget,QPushButton,
                              QLineEdit,QCalendarWidget,QGridLayout,QToolButton,
                              QProgressBar,QTextEdit,QTableWidget,QHeaderView,
                              QTableWidgetItem,QCheckBox,QListWidgetItem,QInputDialog)
 from PyQt5.QtGui import QIcon,QTextCharFormat,QColor
-from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime
+from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,QRect,QEasingCurve
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
                     markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
@@ -169,6 +169,10 @@ class DailyTracker(QWidget):
         vbox=QVBoxLayout()
         vbox.setContentsMargins(0,0,0,0)
         vbox.setSpacing(0)
+        self.buildIconRail()
+        self.buildNavOverlay()
+        self.stack=QStackedWidget()
+        self.homePage=QWidget()
         #main hbox for 3 frames
         self.hbox=QHBoxLayout()
         #creating frames
@@ -185,9 +189,24 @@ class DailyTracker(QWidget):
         self.buildLeftLayout()
         self.buildCentralLayout()
         self.buildRightLayout()
+        self.homePage.setLayout(self.hbox)
+        self.statPage=self.buildBlankPage("Stats")
+        self.streakPage=self.buildBlankPage("Streak")
+        self.settingPage=self.buildBlankPage("Setting")
+        self.stack.addWidget(self.homePage)
+        self.stack.addWidget(self.statPage)
+        self.stack.addWidget(self.streakPage)
+        self.stack.addWidget(self.settingPage)
+
+        main_row=QHBoxLayout()
+        main_row.setSpacing(0)
+        main_row.setContentsMargins(0,0,0,0)
+        main_row.addWidget(self.icon_rail)
+        main_row.addWidget(self.stack,1)
+
         self.buildBottombar()
 
-        vbox.addLayout(self.hbox,1)
+        vbox.addLayout(main_row,1)
         vbox.addWidget(self.bottom_bar)
         self.setLayout(vbox)
         #styling
@@ -195,6 +214,106 @@ class DailyTracker(QWidget):
         self.applyStyles()
         self.refreshIcon()
         self.updateStats()
+    def buildNavOverlay(self):
+        self.nav_overlay=QFrame(self)
+        self.nav_overlay.setObjectName("navOverlay")
+        self.nav_overlay.setMouseTracking(True)
+        self.nav_overlay.leaveEvent=lambda e: self.closeNavOverlay()
+        overlay_layout=QVBoxLayout()
+        overlay_layout.setContentsMargins(10,20,10,20)
+        overlay_layout.setSpacing(10)
+        overlay_layout.setAlignment(Qt.AlignTop)
+        self.nav_home=self.buildNavButton("home.svg","Home")
+        self.nav_stats=self.buildNavButton("bar.svg","Stats")
+        self.nav_streak=self.buildNavButton("hot-icon.svg","Streak")
+        self.nav_setting=self.buildNavButton("setting.svg","Settings")
+
+        self.nav_home.clicked.connect(lambda:self.switchPage(0))
+        self.nav_stats.clicked.connect(lambda:self.switchPage(1))
+        self.nav_streak.clicked.connect(lambda:self.switchPage(2))
+        self.nav_setting.clicked.connect(lambda:self.switchPage(3))
+
+        overlay_layout.addWidget(self.nav_home)
+        overlay_layout.addWidget(self.nav_stats)
+        overlay_layout.addWidget(self.nav_streak)
+        overlay_layout.addStretch()
+        overlay_layout.addWidget(self.nav_setting)
+        self.nav_overlay.setLayout(overlay_layout)
+        self.nav_overlay.setGeometry(0,0,60,600)
+        self.overlay_anim=QPropertyAnimation(self.nav_overlay,b"geometry")
+        self.overlay_anim.setDuration(200)
+        self.overlay_anim.setEasingCurve(QEasingCurve.OutCubic)
+    def openNavOverlay(self):
+        self.nav_overlay.raise_()
+        self.nav_overlay.show()
+        start=self.nav_overlay.geometry()
+        end=QRect(0,0,220,self.height()-self.bottom_bar.height())
+        self.overlay_anim.stop()
+        self.overlay_anim.setStartValue(start)
+        self.overlay_anim.setEndValue(end)
+        self.overlay_anim.start()
+    def closeNavOverlay(self):
+        start=self.nav_overlay.geometry()
+        end=QRect(0,0,60,self.height()-self.bottom_bar.height())
+        self.overlay_anim.stop()
+        self.overlay_anim.setStartValue(start)
+        self.overlay_anim.setEndValue(end)
+        self.overlay_anim.start()
+        self.overlay_anim.finished.connect(self.overlay_anim_finished)
+    def overlay_anim_finished(self):
+        if self.nav_overlay.width()<=60:
+            self.nav_overlay.hide()
+    def switchPage(self,index):
+        self.stack.setCurrentIndex(index)
+        self.closeNavOverlay()
+    def buildNavButton(self,icon_file,label_text):
+        btn=QPushButton(f"   {label_text}")
+        btn.setObjectName("navBtn")
+        suffix="" if self.is_dark_theme else "L"
+        name,ext=icon_file.rsplit(".",1)
+        themed_icon=f"{name}{suffix}.{ext}"
+        self.set_btn_icon(btn,f"./python/dailytracker/{themed_icon}",30)
+        btn.setFixedHeight(44)
+        btn.setCursor(Qt.PointingHandCursor)
+        return btn
+    def buildBlankPage(self,title):
+        page=QWidget()
+        layout=QVBoxLayout()
+        layout.setAlignment(Qt.AlignCenter)
+        label=QLabel(f"{title} - Coming Soon")
+        label.setAlignment(Qt.AlignCenter)
+        label.setObjectName("blankPageLabel")
+        layout.addWidget(label)
+        page.setLayout(layout)
+        return page
+    def buildIconRail(self):
+        self.icon_rail=QFrame()
+        self.icon_rail.setObjectName("iconRail")
+        self.icon_rail.setFixedWidth(60)
+        rail_layout=QVBoxLayout()
+        rail_layout.setContentsMargins(0,20,0,20)
+        rail_layout.setSpacing(10)
+        rail_layout.setAlignment(Qt.AlignTop)
+        self.rail_home=self.buildIconOnlyButton("home.svg")
+        self.rail_stats=self.buildIconOnlyButton("bar.svg")
+        self.rail_streak=self.buildIconOnlyButton("hot-icon.svg")
+        self.rail_setting=self.buildIconOnlyButton("setting.svg")
+
+        rail_layout.addWidget(self.rail_home)
+        rail_layout.addWidget(self.rail_stats)
+        rail_layout.addWidget(self.rail_streak)
+        rail_layout.addStretch()
+        rail_layout.addWidget(self.rail_setting)
+        self.icon_rail.setLayout(rail_layout)
+        self.icon_rail.setMouseTracking(True)
+        self.icon_rail.enterEvent=lambda e:self.openNavOverlay()
+    def buildIconOnlyButton(self,icon_file):
+        btn=QPushButton()
+        btn.setObjectName("railBtn")
+        self.set_btn_icon(btn,f"./python/dailytracker/{icon_file}",20)
+        btn.setFixedSize(44,44)
+        btn.setCursor(Qt.PointingHandCursor)
+        return btn
     def onHabitsReordered(self):
         new_ids=[]
         for i in range(self.habit_list.count()):
@@ -549,6 +668,12 @@ class DailyTracker(QWidget):
         self.prev_btn.setIcon(QIcon(f"./python/dailytracker/left_chevron{suffix}.svg"))
         self.next_btn.setIcon(QIcon(f"./python/dailytracker/right_chevron{suffix}.svg"))
         self.update_icon(self.stats_icon,f"./python/dailytracker/bar{suffix}.svg",35)  
+        self.set_btn_icon(self.rail_home,f"./python/dailytracker/home{suffix}.svg",30)
+        self.set_btn_icon(self.rail_stats,f"./python/dailytracker/bar{suffix}.svg",30)
+        self.set_btn_icon(self.rail_setting,f"./python/dailytracker/setting{suffix}.svg",30)
+        self.set_btn_icon(self.nav_home,f"./python/dailytracker/home{suffix}.svg",30)
+        self.set_btn_icon(self.nav_stats,f"./python/dailytracker/bar{suffix}.svg",30)
+        self.set_btn_icon(self.nav_setting,f"./python/dailytracker/setting{suffix}.svg",30)
     def set_btn_icon(self,button:QPushButton,path:str,size=22):
         button.setIcon(QIcon(path))
         button.setIconSize(QSize(size,size))

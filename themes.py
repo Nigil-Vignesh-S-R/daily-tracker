@@ -372,6 +372,43 @@ def get_dark_stylesheet():
                                QInputDialog QPushButton:hover{
                                background-color:#60A5FA;
                                }
+                               QFrame#iconRail {
+                                background-color: #252525;
+                                border-right: 1px solid #2A2A2A;
+                                border-radius: 0px;
+                                }
+                                QPushButton#railBtn {
+                                background-color: transparent;
+                                border: none;
+                                border-radius: 10px;
+                                padding: 0px;
+                                min-height: 0px;
+                                }
+                                QPushButton#railBtn:hover {
+                                background-color: rgba(251, 176, 59, 25);
+                                }
+                                QFrame#navOverlay {
+                                background-color: #252525;
+                                border-right: 1px solid #2A2A2A;
+                                border-radius: 0px;
+                                }
+                                QPushButton#navBtn {
+                                background-color: transparent;
+                                border: none;
+                                border-radius: 8px;
+                                text-align: left;
+                                padding: 8px;
+                                color: #E5E5E5;
+                                font-size: 20px;
+                                min-height: 0px;
+                                }
+                                QPushButton#navBtn:hover {
+                                background-color: rgba(251, 176, 59, 25);
+                                }
+                                QLabel#blankPageLabel {
+                                color: #5A5A5A;
+                                font-size: 28px;
+                                }
                                """
 def get_light_stylesheet():
     return """
@@ -760,5 +797,42 @@ def get_light_stylesheet():
                     }
                     QInputDialog QPushButton:hover{
                     background-color:#60A5FA;
+                    }
+                    QFrame#iconRail {
+                    background-color: #F5F5F5;
+                    border-right: 1px solid #D8D8D8;
+                    border-radius: 0px;
+                    }
+                    QPushButton#railBtn {
+                    background-color: transparent;
+                    border: none;
+                    border-radius: 10px;
+                    padding: 0px;
+                    min-height: 0px;
+                    }
+                    QPushButton#railBtn:hover {
+                    background-color: rgba(251, 176, 59, 35);
+                    }
+                    QFrame#navOverlay {
+                    background-color: #F5F5F5;
+                    border-right: 1px solid #D8D8D8;
+                    border-radius: 0px;
+                    }
+                    QPushButton#navBtn {
+                    background-color: transparent;
+                    border: none;
+                    border-radius: 8px;
+                    text-align: left;
+                    padding: 8px;
+                    color: #333333;
+                    font-size: 20px;
+                    min-height: 0px;
+                    }
+                    QPushButton#navBtn:hover {
+                    background-color: rgba(251, 176, 59, 35);
+                    }
+                    QLabel#blankPageLabel {
+                    color: #888888;
+                    font-size: 28px;
                     }
                     """
