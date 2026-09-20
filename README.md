@@ -217,7 +217,10 @@ python dailytracker_ui.py
 - Enabled Theme Toggling
 - Enabled Drag and Drop of Habits in the habits list(not the table)
 - Enabled Renaming of habits in the habit list(not the table)
-- created dashboard and enabled navigation
+- Added animated navigation using QStackedWidget, QPropertyAnimation, and QRect.
+- Added dedicated navigation sections for Stats, Streak, and Settings.
+- Added temporary "Coming Soon" views for sections currently under development.
+- Improved dashboard layout and user experience.
 
 ---
 
