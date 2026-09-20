@@ -138,17 +138,23 @@ python dailytracker_ui.py
 
 # 📷 Screenshots
 
-<img width="1497" height="951" alt="image" src="https://github.com/user-attachments/assets/0f3abb6f-9d05-448b-b82b-80f855d9d9d8" />
+<img width="1200" height="762" alt="image" src="https://github.com/user-attachments/assets/c33e753a-c876-4cce-a732-081ff5ef1081" />
 **double clicks waking**
-<img width="1503" height="933" alt="image" src="https://github.com/user-attachments/assets/05993680-2f1c-4786-b6f1-267b466390b7" />
-<img width="1500" height="961" alt="image" src="https://github.com/user-attachments/assets/5e4f8313-a7f6-4bca-8d76-32ec40d85071" />
+<img width="1198" height="772" alt="image" src="https://github.com/user-attachments/assets/be145955-5fef-4776-9d07-ebb99098cc07" />
+<img width="1198" height="768" alt="image" src="https://github.com/user-attachments/assets/1bc4a6e1-1a0f-4e7f-acfa-5e3dd5e123ac" />
+
 **clicks ok/press enter**
-<img width="1499" height="968" alt="image" src="https://github.com/user-attachments/assets/cc661e86-b959-4f8a-b4dd-aba40b2431fa" />
+<img width="1200" height="761" alt="image" src="https://github.com/user-attachments/assets/f52b0566-e133-4e0c-b80a-aed3bceb7bb6" />
+**cursor over dashboard**
+<img width="1208" height="766" alt="image" src="https://github.com/user-attachments/assets/e7ae2558-5540-45c7-b507-af68eb578a0d" />
 
-<img width="1497" height="962" alt="image" src="https://github.com/user-attachments/assets/9efc6e52-e42f-4655-bb34-60369c529eca" />
 
+<img width="1195" height="769" alt="image" src="https://github.com/user-attachments/assets/3dac1024-97cb-497c-9d99-f6ef399ead2b" />
 
-
+**Under Construction**
+<img width="1199" height="767" alt="image" src="https://github.com/user-attachments/assets/949b97e8-2670-4188-8a04-de964ee77ae5" />
+<img width="1197" height="766" alt="image" src="https://github.com/user-attachments/assets/85e72eb9-f55b-4b74-ba81-7ae33891e184" />
+<img width="1199" height="771" alt="image" src="https://github.com/user-attachments/assets/900523a4-2eed-4337-bfa6-0381a9e80526" />
 
 ---
 
@@ -194,7 +200,7 @@ python dailytracker_ui.py
 
 # 📌 Version
 
-**Current Version:** `v1.0.5`
+**Current Version:** `v1.0.6`
 
 ### Recent Improvements
 
@@ -211,6 +217,7 @@ python dailytracker_ui.py
 - Enabled Theme Toggling
 - Enabled Drag and Drop of Habits in the habits list(not the table)
 - Enabled Renaming of habits in the habit list(not the table)
+- created dashboard and enabled navigation
 
 ---
 
