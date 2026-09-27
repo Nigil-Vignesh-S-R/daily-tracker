@@ -205,7 +205,7 @@ python dailytracker_ui.py
 
 ### Recent Improvements
 
-- Built settings page (Buttons are yet to be enabled)
+- Built settings page (Export Button is yet to be enabled)
 - Improved dashboard layout and user experience.
 
 ---
