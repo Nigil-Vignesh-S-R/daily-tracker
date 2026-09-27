@@ -154,7 +154,8 @@ python dailytracker_ui.py
 **Under Construction**
 <img width="1199" height="767" alt="image" src="https://github.com/user-attachments/assets/949b97e8-2670-4188-8a04-de964ee77ae5" />
 <img width="1197" height="766" alt="image" src="https://github.com/user-attachments/assets/85e72eb9-f55b-4b74-ba81-7ae33891e184" />
-<img width="1199" height="771" alt="image" src="https://github.com/user-attachments/assets/900523a4-2eed-4337-bfa6-0381a9e80526" />
+<img width="1196" height="768" alt="image" src="https://github.com/user-attachments/assets/531a8185-2f1b-49c3-90d1-28c622012a1d" />
+
 
 ---
 
@@ -186,7 +187,8 @@ python dailytracker_ui.py
 - [x] Theme switching
 - [x] Bottom status bar
 - [x] Drag-and-drop habit reordering
-- [x] Renaming/Updating habit names 
+- [x] Renaming/Updating habit names
+- [x] Settings Page 
 ### Planned
 
 - [ ] Persistent notes until completed
@@ -195,31 +197,15 @@ python dailytracker_ui.py
 - [ ] Longest Streak Statistics
 - [ ] Habit-wise Analytics
 - [ ] CSV Export
-- [ ] Settings Page
 ---
 
 # 📌 Version
 
-**Current Version:** `v1.0.6`
+**Current Version:** `v1.0.7`
 
 ### Recent Improvements
 
-- Migrated from MySQL to SQLite3.
-- Simplified project setup.
-- Improved startup performance.
-- Fixed streak restoration after application restart.
-- Improved calendar synchronization.
-- Correctly handles months with 28, 29, 30 and 31 days.
-- Added calendar navigation support.
-- Redesigned habit completion indicators (✓ / ✗).
-- Prevented completion indicators before a habit's creation date.
-- General UI and UX improvements.
-- Enabled Theme Toggling
-- Enabled Drag and Drop of Habits in the habits list(not the table)
-- Enabled Renaming of habits in the habit list(not the table)
-- Added animated navigation using QStackedWidget, QPropertyAnimation, and QRect.
-- Added dedicated navigation sections for Stats, Streak, and Settings.
-- Added temporary "Coming Soon" views for sections currently under development.
+- Built settings page (Buttons are yet to be enabled)
 - Improved dashboard layout and user experience.
 
 ---
