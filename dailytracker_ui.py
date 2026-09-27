@@ -1004,6 +1004,7 @@ class DailyTracker(QWidget):
         about_text.addWidget(stack_label)
         self.github_btn=QPushButton("  View on GitHub")
         self.set_btn_icon(self.github_btn,"./python/dailytracker/icons/github.svg",18)
+        self.github_btn.clicked.connect(self.openGitHub)
         self.github_btn.setObjectName("githubBtn")
         self.github_btn.setCursor(Qt.PointingHandCursor)
         about_row.addWidget(about_icon)
@@ -1047,6 +1048,9 @@ class DailyTracker(QWidget):
         layout.addLayout(header)
         card.setLayout(layout)
         return card,icon
+    def openGitHub(self):
+        import webbrowser
+        webbrowser.open("https://github.com//Nigil-Vignesh-S-R/daily-tracker")
 if __name__ == "__main__":
     app=QApplication(sys.argv)
     window = DailyTracker()
