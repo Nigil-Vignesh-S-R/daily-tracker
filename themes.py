@@ -409,6 +409,106 @@ def get_dark_stylesheet():
                                 color: #5A5A5A;
                                 font-size: 28px;
                                 }
+                                QLabel#settingsTitle {
+                                    color: #F5F5F5;
+                                    font-size: 30px;
+                                    font-weight: 400;
+                                }
+                                QLabel#settingsSubtitle {
+                                    color: #A0A0A0;
+                                    font-size: 16px;
+                                    font-weight: 400;
+                                }
+                                QFrame#settingsCard {
+                                    background-color: #1C1C1C;
+                                    border: 1px solid #303030;
+                                    border-radius: 12px;
+                                    padding: 18px;
+                                }
+                                QLabel#cardTitle {
+                                    color: #FBB03B;
+                                    font-size: 20px;
+                                    font-weight: 400;
+                                }
+                                QLabel#settingRowTitle {
+                                    color: #E5E5E5;
+                                    font-size: 17px;
+                                    font-weight: 400;
+                                }
+                                QLabel#settingRowDesc {
+                                    color: #A0A0A0;
+                                    font-size: 14px;
+                                    font-weight: 400;
+                                }
+                                QPushButton#themeOption {
+                                    background-color: #252525;
+                                    border: 1px solid #383838;
+                                    color: #C5C5C5;
+                                    border-radius: 8px;
+                                    padding: 8px 16px;
+                                    min-height: 0px;
+                                    font-size: 14px;
+                                    font-weight: 400;
+                                }
+                                QPushButton#themeOption:hover {
+                                    background-color: #303030;
+                                    border: 1px solid #555555;
+                                    color: #F5F5F5;
+                                }
+                                QPushButton#themeOption[active="true"] {
+                                    background-color: rgba(251, 176, 59, 20);
+                                    border: 1px solid #FBB03B;
+                                    color: #FBB03B;
+                                }
+                                QPushButton#exportBtn {
+                                    background-color: #FBB03B;
+                                    color: #1A1A1A;
+                                    border: 1px solid #FBB03B;
+                                    border-radius: 8px;
+                                    padding: 8px 16px;
+                                    font-size: 14px;
+                                    font-weight: 400;
+                                    min-height: 0px;
+                                }
+                                QPushButton#exportBtn:hover {
+                                    background-color: #FFC85C;
+                                    border: 1px solid #FFC85C;
+                                }
+                                QPushButton#exportBtn:pressed {
+                                    background-color: #E6A02F;
+                                }
+                                QLabel#aboutTitle {
+                                    color: #F5F5F5;
+                                    font-size: 17px;
+                                    font-weight: 400;
+                                }
+                                QLabel#versionBadge {
+                                    color: #FBB03B;
+                                    background-color: rgba(251, 176, 59, 20);
+                                    border: 1px solid rgba(251, 176, 59, 35);
+                                    border-radius: 6px;
+                                    padding: 3px 8px;
+                                    font-size: 13px;
+                                    font-weight: 400;
+                                    max-width: 85px;
+                                }
+                                QPushButton#githubBtn {
+                                    background-color: #E5E5E5;
+                                    border: 1px solid #404040;
+                                    color: #252525;
+                                    border-radius: 8px;
+                                    padding: 8px 16px;
+                                    min-height: 0px;
+                                    font-size: 14px;
+                                    font-weight: 400;
+                                }
+                                QPushButton#githubBtn:hover {
+                                    background-color: #F5F5F5;
+                                    border: 1px solid #777777;
+                                }
+                                QPushButton#githubBtn:pressed {
+                                    background-color: #D0D0D0;
+                                }
                                """
 def get_light_stylesheet():
     return """
@@ -834,5 +934,105 @@ def get_light_stylesheet():
                     QLabel#blankPageLabel {
                     color: #888888;
                     font-size: 28px;
+                    }
+                    QLabel#settingsTitle {
+                    color: #1E1E1E;
+                    font-size: 30px;
+                    font-weight: 400;
+                    }
+                    QLabel#settingsSubtitle {
+                    color: #777777;
+                    font-size: 16px;
+                    font-weight: 400;
+                    }
+                    QFrame#settingsCard {
+                    background-color: #FFFFFF;
+                    border: 1px solid #E5E5E5;
+                    border-radius: 12px;
+                    padding: 18px;
+                    }
+                    QLabel#cardTitle {
+                    color: #B8860B;
+                    font-size: 20px;
+                    font-weight: 400;
+                    }
+                    QLabel#settingRowTitle {
+                    color: #2B2B2B;
+                    font-size: 17px;
+                    font-weight: 400;
+                    }
+                    QLabel#settingRowDesc {
+                    color: #777777;
+                    font-size: 14px;
+                    font-weight: 400;
+                    }
+                    QPushButton#themeOption {
+                    background-color: #F5F5F5;
+                    border: 1px solid #DDDDDD;
+                    color: #4B4B4B;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    min-height: 0px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    }
+                    QPushButton#themeOption:hover {
+                    background-color: #EBEBEB;
+                    border: 1px solid #C5C5C5;
+                    color: #252525;
+                    }
+                    QPushButton#themeOption[active="true"] {
+                    background-color: #FFF5DC;
+                    border: 1px solid #B8860B;
+                    color: #9A7000;
+                    }
+                    QPushButton#exportBtn {
+                    background-color: #FBB03B;
+                    color: #1E1E1E;
+                    border: 1px solid #FBB03B;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    min-height: 0px;
+                    }
+                    QPushButton#exportBtn:hover {
+                    background-color: #FFC85C;
+                    border: 1px solid #FFC85C;
+                    }
+                    QPushButton#exportBtn:pressed {
+                    background-color: #E6A02F;
+                    }
+                    QLabel#aboutTitle {
+                    color: #1E1E1E;
+                    font-size: 17px;
+                    font-weight: 400;
+                    }
+                    QLabel#versionBadge {
+                    color: #9A7000;
+                    background-color: #FFF5DC;
+                    border: 1px solid #F0DCA8;
+                    border-radius: 6px;
+                    padding: 3px 8px;
+                    font-size: 13px;
+                    font-weight: 400;
+                    max-width:85px;
+                    }
+                    QPushButton#githubBtn {
+                    background-color: #F0F0F0;
+                    border: 1px solid #DDDDDD;
+                    color: #2B2B2B;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    min-height: 0px;
+                    font-size: 14px;
+                    font-weight: 400;
+                    }
+                    QPushButton#githubBtn:hover {
+                    background-color: #E5E5E5;
+                    border: 1px solid #CCCCCC;
+                    }
+                    QPushButton#githubBtn:pressed {
+                    background-color: #D8D8D8;
                     }
                     """
