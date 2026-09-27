@@ -291,7 +291,7 @@ def get_dark_stylesheet():
                                border:2px solid rgba(220,38,38,150);
                                border-radius:4px;
                                background-color:rgba(220,38,38,55);
-                               image:url("./python/dailytracker/cross.svg");
+                               image:url("./python/dailytracker/icons/cross.svg");
                                }
                                QCheckBox::indicator:hover{
                                border:2px solid rgba(239,68,68,200);
@@ -303,7 +303,7 @@ def get_dark_stylesheet():
                                QCheckBox::indicator:checked{
                                background-color:rgba(22,163,74,90);
                                border:2px solid rgba(22,163,74,220);
-                               image:url("./python/dailytracker/check.svg");
+                               image:url("./python/dailytracker/icons/check.svg");
                                }
                                QCheckBox::indicator:checked:hover{
                                background-color:rgba(34,197,94,110);
@@ -819,7 +819,7 @@ def get_light_stylesheet():
                         border:2px solid rgba(220,38,38,180);
                         border-radius:5px;
                         background-color:rgba(220,38,38,35);
-                        image:url("./python/dailytracker/crossL.svg");
+                        image:url("./python/dailytracker/icons/crossL.svg");
                     }
                     QCheckBox::indicator:hover{
                         border:2px solid rgba(239,68,68,220);
@@ -831,7 +831,7 @@ def get_light_stylesheet():
                     QCheckBox::indicator:checked{
                         background-color:rgba(22,163,74,70);
                         border:2px solid rgba(22,163,74,220);
-                        image:url("./python/dailytracker/checkL.svg");
+                        image:url("./python/dailytracker/icons/checkL.svg");
                     }
                     QCheckBox::indicator:checked:hover{
                         background-color:rgba(34,197,94,90);
