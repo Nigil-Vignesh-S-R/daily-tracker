@@ -150,3 +150,14 @@ class updateHabitWorker(QThread):
                 self.completed.emit(False,"Failed to rename Habit (name may already exist)",self.habit_id,self.new_name)
         except Exception as e:
             self.completed.emit(False,str(e),self.habit_id,self.new_name)
+class getLogsWorker(QThread):
+    fetched=pyqtSignal(bool,str,list)
+    def __init__(self,db:Database):
+        super().__init__()
+        self.db=db
+    def run(self):
+        try:
+            rows=self.db.get_logs()
+            self.fetched.emit(True,"",rows)
+        except Exception as e:
+            self.fetched.emit(False,str(e),[])
