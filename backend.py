@@ -198,7 +198,25 @@ class Database:
             self.cursor.close()
         if self.connection:
             self.connection.close()
+    def get_logs(self):
+        try :
+            query="""SELECT h.habit_id,h.habit_name,d.date,d.completed
+                     FROM habits h join daily_log d on h.habit_id=d.habit_id
+                     ORDER BY d.date
+                     """
+            self.cursor.execute(query)
+            rows=self.cursor.fetchall()
+            return [(habit_id,habit_name,dt.date.fromisoformat(date),bool(completed))
+                    for habit_id, habit_name, date, completed in rows]
+        except sqlite3.Error as e:
+            print(f"Error fetching all logs: {str(e)}")
+            return []
 if __name__ == "__main__":
     db=Database()
     db.connect()
-    print(db.get_habits())
+    import stats
+    df=stats.buildDataFrame(db.get_logs())
+    print(stats.longestStreak(df))
+    print(stats.best_day(df))
+    print(stats.best_week(df))
+    print(stats.longest_streak_by_habit(df))
