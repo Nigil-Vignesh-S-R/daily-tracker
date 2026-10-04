@@ -151,11 +151,11 @@ python dailytracker_ui.py
 
 <img width="1195" height="769" alt="image" src="https://github.com/user-attachments/assets/3dac1024-97cb-497c-9d99-f6ef399ead2b" />
 
-**Under Construction**
-<img width="1199" height="767" alt="image" src="https://github.com/user-attachments/assets/949b97e8-2670-4188-8a04-de964ee77ae5" />
-<img width="1197" height="766" alt="image" src="https://github.com/user-attachments/assets/85e72eb9-f55b-4b74-ba81-7ae33891e184" />
+<img width="1200" height="769" alt="image" src="https://github.com/user-attachments/assets/a354f7dc-dd56-4939-b0d8-d6bf108e3d69" />
 <img width="1196" height="768" alt="image" src="https://github.com/user-attachments/assets/531a8185-2f1b-49c3-90d1-28c622012a1d" />
 
+**Under Construction**
+<img width="1199" height="767" alt="image" src="https://github.com/user-attachments/assets/949b97e8-2670-4188-8a04-de964ee77ae5" />
 
 ---
 
@@ -188,25 +188,25 @@ python dailytracker_ui.py
 - [x] Bottom status bar
 - [x] Drag-and-drop habit reordering
 - [x] Renaming/Updating habit names
-- [x] Settings Page 
+- [x] Settings Page
+- [x] Longest Streak Statistics
+- [x] Habit-wise Analytics
 ### Planned
 
 - [ ] Persistent notes until completed
 - [ ] Monthly Analytics
 - [ ] Completion Graphs (Matplotlib)
-- [ ] Longest Streak Statistics
-- [ ] Habit-wise Analytics
 - [ ] CSV Export
 ---
 
 # 📌 Version
 
-**Current Version:** `v1.0.7`
+**Current Version:** `v1.0.8`
 
 ### Recent Improvements
 
-- Built settings page (Export Button is yet to be enabled)
-- Improved dashboard layout and user experience.
+- Built Streak page
+- updated version badge in settings and Improved user experience by adding graph.
 
 ---
 
