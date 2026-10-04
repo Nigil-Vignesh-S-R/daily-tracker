@@ -10,9 +10,11 @@ from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,Q
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
                     markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
-                    updateOrderWorker,updateHabitWorker)
+                    updateOrderWorker,updateHabitWorker,getLogsWorker)
 from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 class DailyTracker(QWidget):
     def __init__(self):
         super().__init__()
@@ -191,7 +193,7 @@ class DailyTracker(QWidget):
         self.buildRightLayout()
         self.homePage.setLayout(self.hbox)
         self.statPage=self.buildBlankPage("Stats")
-        self.streakPage=self.buildBlankPage("Streak")
+        self.streakPage=self.buildStreakPage()
         self.settingPage=self.buildSettingPage()
         self.stack.addWidget(self.homePage)
         self.stack.addWidget(self.statPage)
@@ -266,6 +268,8 @@ class DailyTracker(QWidget):
     def switchPage(self,index):
         self.stack.setCurrentIndex(index)
         self.closeNavOverlay()
+        if index==2:
+            self.loadStreakPageData()
     def buildNavButton(self,icon_file,label_text):
         btn=QPushButton(f"   {label_text}")
         btn.setObjectName("navBtn")
@@ -677,6 +681,12 @@ class DailyTracker(QWidget):
         self.update_icon(self.appearance_icon,f"./python/dailytracker/icons/theme{suffix}.svg",22)
         self.update_icon(self.data_icon,f"./python/dailytracker/icons/data{suffix}.svg",22)
         self.update_icon(self.about_icon,f"./python/dailytracker/icons/info{suffix}.svg",22)
+        self.update_icon(self.longest_streak_card.icon_circle,f"./python/dailytracker/icons/trophy{suffix}.svg",22)
+        self.update_icon(self.current_streak_card.icon_circle,f"./python/dailytracker/icons/flame{suffix}.svg",22)
+        self.update_icon(self.best_day_card.icon_circle,f"./python/dailytracker/icons/medal{suffix}.svg",22)
+        self.update_icon(self.best_week_card.icon_circle,f"./python/dailytracker/icons/cal Icon{suffix}.svg",22)
+        self.update_icon(self.trend_icon,f"./python/dailytracker/icons/bargraph{suffix}.svg",28)
+        self.update_icon(self.habit_bars_icon,f"./python/dailytracker/icons/bar{suffix}.svg",28)
     def set_btn_icon(self,button:QPushButton,path:str,size=22):
         button.setIcon(QIcon(path))
         button.setIconSize(QSize(size,size))
@@ -995,7 +1005,7 @@ class DailyTracker(QWidget):
         about_text=QVBoxLayout()
         app_name=QLabel("Daily Tracker")
         app_name.setObjectName("aboutTitle")
-        version_label=QLabel("Version 1.0.6")
+        version_label=QLabel("Version 1.0.8")
         version_label.setObjectName("versionBadge")
         stack_label=QLabel("Built with Python • PyQt5 • SQLite")
         stack_label.setObjectName("settingRowDesc")
@@ -1051,6 +1061,199 @@ class DailyTracker(QWidget):
     def openGitHub(self):
         import webbrowser
         webbrowser.open("https://github.com//Nigil-Vignesh-S-R/daily-tracker")
+    def buildStreakChartSection(self):
+        card=QFrame()
+        card.setObjectName("statsCard")
+        layout=QVBoxLayout()
+        header=QHBoxLayout()
+        self.trend_icon=self.seticon("./python/dailytracker/icons/bargraph.svg",28)
+        title=QLabel("Streak Progress Over Time")
+        title.setObjectName("cardTitle")
+        header.addWidget(self.trend_icon)
+        header.addWidget(title)
+        header.addStretch()
+        subtitle=QLabel("Your current streak length over time")
+        subtitle.setObjectName("settingRowDesc")
+
+        self.streak_figure=Figure(figsize=(5,3))
+        self.streak_canvas=FigureCanvas(self.streak_figure)
+        self.streak_canvas.setStyleSheet("background:transparent;")
+
+        layout.addLayout(header)
+        layout.addWidget(subtitle)
+        layout.addWidget(self.streak_canvas)
+        card.setLayout(layout)
+        return card
+    def drawStreakChart(self,xs,ys):
+        self.streak_figure.clear()
+        ax=self.streak_figure.add_subplot(111)
+        bg_color="#1A1A1A" if self.is_dark_theme else "#FFFFFF"
+        line_color="#FBB03B" if self.is_dark_theme else "#A66A00"
+        text_color="#C5C5C5" if self.is_dark_theme else "#4B4B4B"
+
+        self.streak_figure.patch.set_facecolor(bg_color)
+        ax.set_facecolor(bg_color)
+        ax.plot(xs,ys,color=line_color,linewidth=2)
+        ax.fill_between(xs,ys,color=line_color,alpha=0.15)
+        ax.tick_params(colors=text_color,labelsize=8)
+        for spine in ax.spines.values():
+            spine.set_color(text_color)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        self.streak_figure.autofmt_xdate()
+        self.streak_figure.tight_layout()
+        self.streak_canvas.draw()
+    def buildHabitStreakBarsSection(self):
+        card=QFrame()
+        card.setObjectName("statsCard")
+        layout=QVBoxLayout()
+        header=QHBoxLayout()
+        self.habit_bars_icon=self.seticon("./python/dailytracker/icons/bar.svg",28)
+        title=QLabel("Longest Streak by Habit")
+        title.setObjectName("cardTitle")
+        header.addWidget(self.habit_bars_icon)
+        header.addWidget(title)
+        header.addStretch()
+        subtitle=QLabel("Your best streak for each habit")
+        subtitle.setObjectName("settingRowDesc")
+
+        self.habit_bars_layout=QVBoxLayout()
+        self.habit_bars_layout.setSpacing(12)
+
+        layout.addLayout(header)
+        layout.addWidget(subtitle)
+        layout.addLayout(self.habit_bars_layout)
+        card.setLayout(layout)
+        return card
+    def populateHabitStreakBars(self,results):
+        while self.habit_bars_layout.count():
+            item=self.habit_bars_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        max_len=max((r[1] for r in results),default=1) or 1
+        for habit_name,best_len,best_start,best_end,total in results:
+            row=QHBoxLayout()
+            name_label=QLabel(habit_name)
+            name_label.setObjectName("settingRowDesc")
+            name_label.setFixedWidth(140)
+            bar=QProgressBar()
+            bar.setMaximum(max_len)
+            bar.setValue(best_len)
+            bar.setTextVisible(False)
+            bar.setFixedHeight(14)
+            value_label=QLabel(f"{best_len} days")
+            value_label.setObjectName("settingRowDesc")
+            value_label.setFixedWidth(60)
+            row.addWidget(name_label)
+            row.addWidget(bar,1)
+            row.addWidget(value_label)
+            self.habit_bars_layout.addLayout(row)
+    def buildStreakPage(self):
+        page=QWidget()
+        outer=QVBoxLayout()
+        outer.setContentsMargins(40,30,40,30)
+        outer.setSpacing(20)
+        header_layout=QVBoxLayout()
+        header_layout.setSpacing(2)
+        title=QLabel("Streak")
+        title.setObjectName("settingsTitle")
+        subtitle=QLabel("Track your consistency and break your own records.")
+        subtitle.setObjectName("settingsSubtitle")
+        header_layout.addWidget(title)
+        header_layout.addWidget(subtitle)
+        outer.addLayout(header_layout)
+        cards_row=QHBoxLayout()
+        cards_row.setSpacing(16)
+        self.longest_streak_card=self.buildStatCard("trophy.svg","Longest Streak (All Habits)","— Days","")
+        self.current_streak_card=self.buildStatCard("flame.svg","Current Streak","— Days","")
+        self.best_day_card=self.buildStatCard("medal.svg","Best Day","—","")
+        self.best_week_card=self.buildStatCard("cal Icon.svg","Best Week","—","")
+        cards_row.addWidget(self.longest_streak_card)
+        cards_row.addWidget(self.current_streak_card)
+        cards_row.addWidget(self.best_day_card)
+        cards_row.addWidget(self.best_week_card)
+        outer.addLayout(cards_row)
+        charts_row=QHBoxLayout()
+        charts_row.setSpacing(16)
+        chart_card=self.buildStreakChartSection()
+        bars_card=self.buildHabitStreakBarsSection()
+        charts_row.addWidget(chart_card,2)
+        charts_row.addWidget(bars_card,1)
+        outer.addLayout(charts_row)
+        page.setLayout(outer)
+        return page
+    def buildStatCard(self,icon_file,title_text,value_text,sub_text):
+        card=QFrame()
+        card.setObjectName("statCardBig")
+        layout=QVBoxLayout()
+        header=QHBoxLayout()
+        icon_circle=QLabel()
+        icon_circle.setObjectName("statCardIconCircle")
+        icon_circle.setFixedSize(44,44)
+        icon_circle.setAlignment(Qt.AlignCenter)
+        suffix="" if self.is_dark_theme else "L"
+        name,ext=icon_file.rsplit(".",1)
+        themed_icon=f"{name}{suffix}.{ext}"
+        pix=QIcon(f"./python/dailytracker/icons/{themed_icon}").pixmap(22,22)
+        icon_circle.setPixmap(pix)
+        title_label=QLabel(title_text)
+        title_label.setObjectName("statCardTitle")
+        header.addWidget(icon_circle)
+        header.addWidget(title_label)
+        header.addStretch()
+        value_label=QLabel(value_text)
+        value_label.setObjectName("statCardValue")
+        sub_label=QLabel(sub_text)
+        sub_label.setObjectName("statCardSub")
+        layout.addLayout(header)
+        layout.addWidget(value_label)
+        layout.addWidget(sub_label)
+        card.setLayout(layout)
+        card.value_label=value_label
+        card.sub_label=sub_label
+        card.icon_circle=icon_circle
+        return card
+    def loadStreakPageData(self):
+        self.streak_logs_thread=getLogsWorker(self.db)
+        self.streak_logs_thread.fetched.connect(self.streakLogsFetched)
+        self.streak_logs_thread.finished.connect(self.streak_logs_thread.deleteLater)
+        self.streak_logs_thread.start()
+    def streakLogsFetched(self,success,error,rows):
+        if not success:
+            print(f"Error loading streak page data: {error}")
+            return
+        import stats
+        df=stats.buildDataFrame(rows)
+
+        best_len,best_start,best_end=stats.longestStreak(df)
+        self.longest_streak_card.value_label.setText(f"{best_len} Days")
+        if best_start and best_end:
+            self.longest_streak_card.sub_label.setText(
+                f"{best_start.strftime('%d %b %Y')} – {best_end.strftime('%d %b %Y')}"
+            )
+
+        current=self.calculateStreak(self.completed_dates)
+        self.current_streak_card.value_label.setText(f"{current} Days")
+        self.current_streak_card.sub_label.setText("Keep it going! You've got this! 💪")
+
+        day,done,total=stats.best_day(df,self.habits)
+        if day:
+            self.best_day_card.value_label.setText(f"{done} / {total}")
+            pct=round(done*100/total) if total else 0
+            self.best_day_card.sub_label.setText(f"{pct}% Completed  •  {day.strftime('%d %b %Y')}")
+
+        week_start,week_end,rate=stats.best_week(df,self.habits)
+        if week_start and week_end:
+            self.best_week_card.value_label.setText(f"{rate}%")
+            self.best_week_card.sub_label.setText(
+                f"Completion Rate\n{week_start.strftime('%d %b')} – {week_end.strftime('%d %b %Y')}"
+            )
+
+        xs,ys=stats.streak_progress_over_time(df)
+        self.drawStreakChart(xs,ys)
+
+        habit_results=stats.longest_streak_by_habit(df)
+        self.populateHabitStreakBars(habit_results)
 if __name__ == "__main__":
     app=QApplication(sys.argv)
     window = DailyTracker()
