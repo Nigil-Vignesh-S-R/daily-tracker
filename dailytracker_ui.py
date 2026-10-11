@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,Q
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
                     markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
-                    updateOrderWorker,updateHabitWorker,getLogsWorker)
+                    updateOrderWorker,updateHabitWorker,getLogsWorker,StreakStatsWorker)
 from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -946,6 +946,9 @@ class DailyTracker(QWidget):
         self.refreshIcon()
         self.styleCalendarHeader()
         self.db.save_setting("theme","dark" if self.is_dark_theme else "light")
+        result=getattr(self,"streak_result",None)
+        if result:
+            self.drawStreakChart(result['xs'],result['ys'])
     def buildSettingPage(self):
         page=QWidget()
         outer=QVBoxLayout()
@@ -1222,38 +1225,35 @@ class DailyTracker(QWidget):
         if not success:
             print(f"Error loading streak page data: {error}")
             return
-        import stats
-        df=stats.buildDataFrame(rows)
-
-        best_len,best_start,best_end=stats.longestStreak(df)
-        self.longest_streak_card.value_label.setText(f"{best_len} Days")
-        if best_start and best_end:
+        self.streak_rows=rows
+        self.stats_thread=StreakStatsWorker(rows,self.habits)
+        self.stats_thread.fetched.connect(self.streakStatsReady)
+        self.stats_thread.finished.connect(self.stats_thread.deleteLater)
+        self.stats_thread.start()
+    def streakStatsReady(self,success,error,result):
+        if not success:
+            print(f"Error computing streak stats :{error}")
+            return
+        self.streak_result=result
+        self.longest_streak_card.value_label.setText(f"{result['best_len']} Days")
+        if result['best_start'] and result['best_end']:
             self.longest_streak_card.sub_label.setText(
-                f"{best_start.strftime('%d %b %Y')} – {best_end.strftime('%d %b %Y')}"
-            )
-
+                f"{result['best_start'].strftime('%d %b %Y')} – {result['best_end'].strftime('%d %b %Y')}"
+                )
         current=self.calculateStreak(self.completed_dates)
         self.current_streak_card.value_label.setText(f"{current} Days")
         self.current_streak_card.sub_label.setText("Keep it going! You've got this! 💪")
-
-        day,done,total=stats.best_day(df,self.habits)
-        if day:
-            self.best_day_card.value_label.setText(f"{done} / {total}")
-            pct=round(done*100/total) if total else 0
-            self.best_day_card.sub_label.setText(f"{pct}% Completed  •  {day.strftime('%d %b %Y')}")
-
-        week_start,week_end,rate=stats.best_week(df,self.habits)
-        if week_start and week_end:
-            self.best_week_card.value_label.setText(f"{rate}%")
+        if result['day']:
+            self.best_day_card.value_label.setText(f"{result['done']} / {result['total']}")
+            pct=round(result["done"]*100/result["total"]) if result["total"] else 0
+            self.best_day_card.sub_label.setText(f"{pct}% Completed  •  {result['day'].strftime('%d %b %Y')}")
+        if result['week_start'] and result['week_end']:
+            self.best_week_card.value_label.setText(f"{result['rate']}%")
             self.best_week_card.sub_label.setText(
-                f"Completion Rate\n{week_start.strftime('%d %b')} – {week_end.strftime('%d %b %Y')}"
+                f"Completion Rate\n{result['week_start'].strftime('%d %b')} – {result['week_end'].strftime('%d %b %Y')}"
             )
-
-        xs,ys=stats.streak_progress_over_time(df)
-        self.drawStreakChart(xs,ys)
-
-        habit_results=stats.longest_streak_by_habit(df)
-        self.populateHabitStreakBars(habit_results)
+        self.drawStreakChart(result["xs"],result["ys"])
+        self.populateHabitStreakBars(result["habit_result"])
 if __name__ == "__main__":
     app=QApplication(sys.argv)
     window = DailyTracker()
