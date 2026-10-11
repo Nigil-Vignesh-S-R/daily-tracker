@@ -509,34 +509,51 @@ def get_dark_stylesheet():
                                 QPushButton#githubBtn:pressed {
                                     background-color: #D0D0D0;
                                 }
-                                QFrame#statCardBig{
-                                background-color:#1A1A1A;
-                                border:1px solid #2A2A2A;
-                                border-radius:14px;
-                                padding:16px;
+                                QFrame#statCardBig {
+                                background-color: #1A1A1A;
+                                border: 1px solid #303030;
+                                border-radius: 12px;
+                                padding: 14px;
                                 }
-                                QLabel#statCardIconCircle{
-                                background-color:rgba(251,176,59,20);
-                                border-radius:22px;
+                                QFrame#statCardBig:hover {
+                                background-color: #1E1E1E;
+                                border: 1px solid #454545;
                                 }
-                                QLabel#statCardTitle{
-                                color:#B5B5B5;
-                                font-size:14px;
+                                QLabel#statCardIconCircle {
+                                background-color: rgba(251, 176, 59, 22);
+                                border: 1px solid rgba(251, 176, 59, 45);
+                                border-radius: 20px;
+                                color: #FBB03B;
                                 }
-                                QLabel#statCardValue{
-                                color:#F5F5F5;
-                                font-size:32px;
-                                font-weight:700;
+                                QLabel#statCardTitle {
+                                color: #A8A8A8;
+                                font-size: 13px;
+                                font-weight: 500;
+                                background: transparent;
+                                border: none;
                                 }
-                                QLabel#statCardSub{
-                                color:#FBB03B;
-                                font-size:12px;
+                                QLabel#statCardValue {
+                                color: #F5F5F5;
+                                font-size: 28px;
+                                font-weight: 700;
+                                background: transparent;
+                                border: none;
                                 }
-                                QFrame#statsCard{
-                                background-color:#1A1A1A;
-                                border:1px solid #2A2A2A;
-                                border-radius:14px;
-                                padding:16px;
+                                QLabel#statCardSub {
+                                color: #FBB03B;
+                                font-size: 12px;
+                                font-weight: 500;
+                                background: transparent;
+                                border: none;
+                                }
+                                QFrame#statsCard {
+                                background-color: #171717;
+                                border: 1px solid #2D2D2D;
+                                border-radius: 12px;
+                                padding: 16px;
+                                }
+                                QFrame#statsCard:hover {
+                                border: 1px solid #3A3A3A;
                                 }
                                """
 def get_light_stylesheet():
@@ -1064,33 +1081,50 @@ def get_light_stylesheet():
                     QPushButton#githubBtn:pressed {
                     background-color: #D8D8D8;
                     }
-                    QFrame#statCardBig{
-                    background-color:#FFFFFF;
-                    border:1px solid #E5E5E5;
-                    border-radius:14px;
-                    padding:16px;
+                    QFrame#statCardBig {
+                    background-color: #FFFFFF;
+                    border: 1px solid #E7E7E7;
+                    border-radius: 12px;
+                    padding: 14px;
                     }
-                    QLabel#statCardIconCircle{
-                    background-color:rgba(184,134,11,18);
-                    border-radius:22px;
+                    QFrame#statCardBig:hover {
+                    background-color: #FFFEFA;
+                    border: 1px solid #E3C78D;
                     }
-                    QLabel#statCardTitle{
-                    color:#6B6B6B;
-                    font-size:14px;
+                    QLabel#statCardIconCircle {
+                    background-color: #FFF5DF;
+                    border: 1px solid #F2E1B9;
+                    border-radius: 20px;
+                    color: #A87513;
                     }
-                    QLabel#statCardValue{
-                    color:#1E1E1E;
-                    font-size:32px;
-                    font-weight:700;
+                    QLabel#statCardTitle {
+                    color: #707070;
+                    font-size: 13px;
+                    font-weight: 500;
+                    background: transparent;
+                    border: none;
                     }
-                    QLabel#statCardSub{
-                    color:#B8860B;
-                    font-size:12px;
+                    QLabel#statCardValue {
+                    color: #202020;
+                    font-size: 28px;
+                    font-weight: 700;
+                    background: transparent;
+                    border: none;
                     }
-                    QFrame#statsCard{
-                    background-color:#FFFFFF;
-                    border:1px solid #E5E5E5;
-                    border-radius:14px;
-                    padding:16px;
+                    QLabel#statCardSub {
+                    color: #94650B;
+                    font-size: 12px;
+                    font-weight: 500;
+                    background: transparent;
+                    border: none;
+                    }
+                    QFrame#statsCard {
+                    background-color: #FFFFFF;
+                    border: 1px solid #E7E7E7;
+                    border-radius: 12px;
+                    padding: 16px;
+                    }
+                    QFrame#statsCard:hover {
+                    border: 1px solid #D8D8D8;
                     }
                     """
