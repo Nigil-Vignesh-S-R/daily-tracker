@@ -161,3 +161,25 @@ class getLogsWorker(QThread):
             self.fetched.emit(True,"",rows)
         except Exception as e:
             self.fetched.emit(False,str(e),[])
+class StreakStatsWorker(QThread):
+    fetched=pyqtSignal(bool,str,dict)
+    def __init__(self,rows,habits):
+        super().__init__()
+        self.rows=rows
+        self.habits=habits
+    def run(self):
+        try:
+            import stats
+            df=stats.buildDataFrame(self.rows)
+            best_len,best_start,best_end=stats.longestStreak(df)
+            day,done,total=stats.best_day(df,self.habits)
+            week_start,week_end,rate=stats.best_week(df,self.habits)
+            xs,ys=stats.streak_progress_over_time(df)
+            habit_result=stats.longest_streak_by_habit(df)
+            r={"best_len":best_len,"best_start":best_start,"best_end":best_end,
+               "day":day,"done":done,"total":total,
+               "week_start":week_start,"week_end":week_end,"rate":rate,
+               "xs":xs,"ys":ys,"habit_result":habit_result}
+            self.fetched.emit(True,"",r)
+        except Exception as e:
+            self.fetched.emit(False,str(e),{})
