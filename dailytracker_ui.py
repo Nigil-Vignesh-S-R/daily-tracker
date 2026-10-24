@@ -5,16 +5,30 @@ from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,QStackedWid
                              QLineEdit,QCalendarWidget,QGridLayout,QToolButton,
                              QProgressBar,QTextEdit,QTableWidget,QHeaderView,
                              QTableWidgetItem,QCheckBox,QListWidgetItem,QInputDialog)
-from PyQt5.QtGui import QIcon,QTextCharFormat,QColor
-from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,QRect,QEasingCurve
+from PyQt5.QtGui import QIcon,QTextCharFormat,QColor,QPainter
+from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,QRect,QEasingCurve,QRectF
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
                     markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
-                    updateOrderWorker,updateHabitWorker,getLogsWorker,StreakStatsWorker)
+                    updateOrderWorker,updateHabitWorker,getLogsWorker,StreakStatsWorker,WarmupWorker)
 from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+class RoundedBar(QWidget):
+    def __init__(self, value, maximum, fill="#3B82F6", track="#363636"):
+        super().__init__()
+        self.value, self.maximum = value, max(maximum, 1)
+        self.fill, self.track = QColor(fill), QColor(track)
+        self.setFixedHeight(14)
+
+    def paintEvent(self, e):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(Qt.NoPen)
+        w, h = self.width(), self.height()
+        p.setBrush(self.track)
+        p.drawRoundedRect(QRectF(0, 0, w, h), h/2, h/2)
+        p.setBrush(self.fill)
+        p.drawRoundedRect(QRectF(0, 0, max(w*self.value/self.maximum, h), h), h/2, h/2)
 class DailyTracker(QWidget):
     def __init__(self):
         super().__init__()
@@ -25,6 +39,8 @@ class DailyTracker(QWidget):
         self.month_completions:set={}
         self.db_ready=False
         self.is_dark_theme=True
+        self.streak_dirty=True
+        self.completed_dates=[]
         self.initUI()
         self.clock_timer=QTimer(self)
         self.clock_timer.timeout.connect(self.updateClock)
@@ -36,6 +52,7 @@ class DailyTracker(QWidget):
         self.DBThread.connected.connect(self.on_db_connected)
         self.DBThread.start()
         self.DBThread.finished.connect(self.DBThread.deleteLater) 
+        QTimer.singleShot(300,self.startWarmup)
         QApplication.instance().installEventFilter(self)
     def updateClock(self):
         now=QDate.currentDate()
@@ -60,6 +77,7 @@ class DailyTracker(QWidget):
             self.is_dark_theme=(saved_theme=="dark")
             self.applyStyles()
             self.refreshIcon()
+            self.updateThemeOptionStyles()
             if self.is_dark_theme:
                 self.set_btn_icon(self.theme_btn,"./python/dailytracker/icons/sun.svg")
             else:
@@ -97,6 +115,7 @@ class DailyTracker(QWidget):
             item.setData(Qt.UserRole,habit_id)
             self.habit_list.addItem(item)
             self.habits.append((habit_id,habit_name,QDate.currentDate().toPyDate()))
+            self.streak_dirty=True
             self.buildHabitTable()
             self.loadCompletions()
             self.habit_name.clear()
@@ -111,6 +130,7 @@ class DailyTracker(QWidget):
             self.habit_list.clearSelection()
             self.habit_list.setCurrentItem(None)
             self.habits=[h for h in self.habits if h[0]!= habit_id]
+            self.streak_dirty=True
             self.buildHabitTable()
             self.loadCompletions()
         else:
@@ -140,7 +160,7 @@ class DailyTracker(QWidget):
                     chk_box.blockSignals(False)
             if completed:
                 self.month_completions.setdefault(log_date,set()).add(habit_id)
-            self.updateStats()
+        self.updateStats()
     def styleCalendarHeader(self):
         weekDay_Format=QTextCharFormat()
         if self.is_dark_theme:
@@ -214,6 +234,7 @@ class DailyTracker(QWidget):
         #styling
         self.setObjectnames()
         self.applyStyles()
+        self.updateThemeOptionStyles()
         self.refreshIcon()
         self.updateStats()
     def buildNavOverlay(self):
@@ -245,6 +266,7 @@ class DailyTracker(QWidget):
         self.overlay_anim=QPropertyAnimation(self.nav_overlay,b"geometry")
         self.overlay_anim.setDuration(200)
         self.overlay_anim.setEasingCurve(QEasingCurve.OutCubic)
+        self.overlay_anim.finished.connect(self.overlay_anim_finished)
     def openNavOverlay(self):
         self.nav_overlay.raise_()
         self.nav_overlay.show()
@@ -261,14 +283,14 @@ class DailyTracker(QWidget):
         self.overlay_anim.setStartValue(start)
         self.overlay_anim.setEndValue(end)
         self.overlay_anim.start()
-        self.overlay_anim.finished.connect(self.overlay_anim_finished)
     def overlay_anim_finished(self):
         if self.nav_overlay.width()<=60:
             self.nav_overlay.hide()
     def switchPage(self,index):
         self.stack.setCurrentIndex(index)
         self.closeNavOverlay()
-        if index==2:
+        if index==2 and self.streak_dirty:
+            self.streak_dirty=False
             self.loadStreakPageData()
     def buildNavButton(self,icon_file,label_text):
         btn=QPushButton(f"   {label_text}")
@@ -328,7 +350,7 @@ class DailyTracker(QWidget):
         self.habits=[id_to_habit[hid] for hid in new_ids]
         self.reorder_thread=updateOrderWorker(self.db,new_ids)
         self.reorder_thread.completed.connect(self.orderSaved)
-        self.reorder_thread.completed.connect(self.reorder_thread.deleteLater)
+        self.reorder_thread.finished.connect(self.reorder_thread.deleteLater)
         self.reorder_thread.start()
         self.buildHabitTable()
         self.loadCompletions()
@@ -368,6 +390,7 @@ class DailyTracker(QWidget):
             self.habit_error.setText(f"Error: {error}")
             self.habit_error.setVisible(True)
             return
+        self.streak_dirty=True
         self.habit_error.setVisible(False)
         updated_Habits=[]
         for hid,name,created_at in self.habits:
@@ -879,6 +902,7 @@ class DailyTracker(QWidget):
             print(f"Error saving completion: {error}")
         else:
             day_set=self.month_completions.setdefault(date,set())
+            self.streak_dirty=True
             if completed:
                 day_set.add(habit_id)
             else:
@@ -949,6 +973,7 @@ class DailyTracker(QWidget):
         result=getattr(self,"streak_result",None)
         if result:
             self.drawStreakChart(result['xs'],result['ys'])
+        self.updateThemeOptionStyles()
     def buildSettingPage(self):
         page=QWidget()
         outer=QVBoxLayout()
@@ -1041,12 +1066,12 @@ class DailyTracker(QWidget):
     def setThemeFromSettings(self,want_dark:bool):
         if want_dark != self.is_dark_theme:
             self.toggleTheme()
-        self.updateThemeOptionStyles()
     def updateThemeOptionStyles(self):
-        self.dark_option=QPushButton(" Dark")
-        self.dark_option.setObjectName("themeOption")
-        self.set_btn_icon(self.dark_option,"./python/dailytracker/icons/moon.svg",18)
-        self.dark_option.clicked.connect(lambda: self.setThemeFromSettings(True))
+        self.dark_option.setProperty("active",self.is_dark_theme)
+        self.light_option.setProperty("active",not self.is_dark_theme)
+        for b in (self.dark_option,self.light_option):
+            b.style().unpolish(b)
+            b.style().polish(b)
     def buildSettingsCard(self,icon_file,title_text):
         card=QFrame()
         card.setObjectName("settingsCard")
@@ -1078,16 +1103,30 @@ class DailyTracker(QWidget):
         subtitle=QLabel("Your current streak length over time")
         subtitle.setObjectName("settingRowDesc")
 
-        self.streak_figure=Figure(figsize=(5,3))
-        self.streak_canvas=FigureCanvas(self.streak_figure)
-        self.streak_canvas.setStyleSheet("background:transparent;")
+        self.streak_figure=None
+        self.streak_canvas=None
+        self.chart_holder=QVBoxLayout()
 
         layout.addLayout(header)
         layout.addWidget(subtitle)
-        layout.addWidget(self.streak_canvas)
+        layout.addLayout(self.chart_holder,1)
         card.setLayout(layout)
         return card
+    def startWarmup(self):
+        self.warmup_thread=WarmupWorker()
+        self.warmup_thread.finished.connect(self.warmup_thread.deleteLater)
+        self.warmup_thread.start()
+    def ensureStreakCanvas(self):
+        if self.streak_canvas is not None:
+            return
+        from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+        from matplotlib.figure import Figure
+        self.streak_figure=Figure(figsize=(5,3))
+        self.streak_canvas=FigureCanvas(self.streak_figure)
+        self.streak_canvas.setStyleSheet("background:transparent;")
+        self.chart_holder.addWidget(self.streak_canvas)
     def drawStreakChart(self,xs,ys):
+        self.ensureStreakCanvas()
         self.streak_figure.clear()
         ax=self.streak_figure.add_subplot(111)
         bg_color="#1A1A1A" if self.is_dark_theme else "#FFFFFF"
@@ -1119,36 +1158,40 @@ class DailyTracker(QWidget):
         header.addStretch()
         subtitle=QLabel("Your best streak for each habit")
         subtitle.setObjectName("settingRowDesc")
-
         self.habit_bars_layout=QVBoxLayout()
         self.habit_bars_layout.setSpacing(12)
-
         layout.addLayout(header)
         layout.addWidget(subtitle)
         layout.addLayout(self.habit_bars_layout)
+        layout.addStretch()
+        layout.setSpacing(20)
         card.setLayout(layout)
         return card
+    def clearLayout(self,layout):
+        while layout.count():
+            item=layout.takeAt(0)
+            widget=item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+            elif item.layout() is not None:
+                self.clearLayout(item.layout())
     def populateHabitStreakBars(self,results):
-        while self.habit_bars_layout.count():
-            item=self.habit_bars_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+        self.clearLayout(self.habit_bars_layout)
         max_len=max((r[1] for r in results),default=1) or 1
         for habit_name,best_len,best_start,best_end,total in results:
             row=QHBoxLayout()
             name_label=QLabel(habit_name)
             name_label.setObjectName("settingRowDesc")
             name_label.setFixedWidth(140)
-            bar=QProgressBar()
-            bar.setMaximum(max_len)
-            bar.setValue(best_len)
-            bar.setTextVisible(False)
-            bar.setFixedHeight(14)
-            value_label=QLabel(f"{best_len} days")
+            bar=RoundedBar(best_len,max_len,track="#363636" if self.is_dark_theme else "#E2E8F0")
+            unit = "day" if best_len == 1 else "days"
+            value_label = QLabel(f"{best_len} {unit}")
             value_label.setObjectName("settingRowDesc")
-            value_label.setFixedWidth(60)
+            value_label.setFixedWidth(55)
+            value_label.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
             row.addWidget(name_label)
-            row.addWidget(bar,1)
+            row.addWidget(bar, 1)
             row.addWidget(value_label)
             self.habit_bars_layout.addLayout(row)
     def buildStreakPage(self):
@@ -1224,6 +1267,7 @@ class DailyTracker(QWidget):
     def streakLogsFetched(self,success,error,rows):
         if not success:
             print(f"Error loading streak page data: {error}")
+            self.streak_dirty=True
             return
         self.streak_rows=rows
         self.stats_thread=StreakStatsWorker(rows,self.habits)
@@ -1233,6 +1277,7 @@ class DailyTracker(QWidget):
     def streakStatsReady(self,success,error,result):
         if not success:
             print(f"Error computing streak stats :{error}")
+            self.streak_dirty=True
             return
         self.streak_result=result
         self.longest_streak_card.value_label.setText(f"{result['best_len']} Days")
