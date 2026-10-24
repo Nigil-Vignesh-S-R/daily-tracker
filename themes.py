@@ -119,13 +119,13 @@ def get_dark_stylesheet():
                                }
                                QProgressBar{
                                border:none;
-                               border-radius:6px;
+                               border-radius:7px;
                                background:#363636;
-                               height:12px;
+                               height:14px;
                                }
                                QProgressBar::chunk{
                                background:#3B82F6;
-                               border-radius:6px;
+                               border-radius:7px;
                                }
                                QLineEdit{
                                background-color:#252525;
@@ -683,13 +683,13 @@ def get_light_stylesheet():
                     }
                     QProgressBar{
                         border:none;
-                        border-radius:6px;
+                        border-radius:7px;
                         background:#E2E8F0;
-                        height:12px;
+                        height:14px;
                     }
                     QProgressBar::chunk{
                         background:#3B82F6;
-                        border-radius:6px;
+                        border-radius:7px;
                     }
                     QLineEdit{
                         background-color:#FFFFFF;
