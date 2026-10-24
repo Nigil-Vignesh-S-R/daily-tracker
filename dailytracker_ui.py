@@ -1,9 +1,10 @@
 import sys
+import csv
 from datetime import timedelta
 from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,QStackedWidget,
                              QVBoxLayout,QLabel,QListWidget,QPushButton,
                              QLineEdit,QCalendarWidget,QGridLayout,QToolButton,
-                             QProgressBar,QTextEdit,QTableWidget,QHeaderView,
+                             QProgressBar,QTextEdit,QTableWidget,QHeaderView,QFileDialog,
                              QTableWidgetItem,QCheckBox,QListWidgetItem,QInputDialog)
 from PyQt5.QtGui import QIcon,QTextCharFormat,QColor,QPainter
 from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,QRect,QEasingCurve,QRectF
@@ -1025,6 +1026,7 @@ class DailyTracker(QWidget):
         export_row.addLayout(export_text)
         export_row.addStretch()
         export_row.addWidget(self.export_btn)
+        self.export_btn.clicked.connect(self.exportCSV)
         data_card.layout().addLayout(export_row)
 
         self.about_card,self.about_icon=self.buildSettingsCard("info.svg","About")
@@ -1299,6 +1301,26 @@ class DailyTracker(QWidget):
             )
         self.drawStreakChart(result["xs"],result["ys"])
         self.populateHabitStreakBars(result["habit_result"])
+    def exportCSV(self):
+        path,_=QFileDialog.getSaveFileName(self,"Export CSV","daily_tracker_export.csv","CSV Files (*.csv)")
+        if not path:
+            return
+        self.export_path=path
+        self.export_btn.setEnabled(False)
+        self.export_thread=getLogsWorker(self.db)
+        self.export_thread.fetched.connect(self.csvReady)
+        self.export_thread.finished.connect(self.export_thread.deleteLater)
+        self.export_thread.start()
+    def csvReady(self,success,error,rows):
+        self.export_btn.setEnabled(True)
+        if not success:
+            print(f"Error exporting CSV: {error}")
+            return
+        with open(self.export_path,"w",newline="",encoding="utf-8") as f:
+            w=csv.writer(f)
+            w.writerow(["Date","Habit","Completed"])
+            for _,habit_name,log_date,completed in sorted(rows,key=lambda r:r[2]):
+                w.writerow([log_date,habit_name,"Yes" if completed else "No"])
 if __name__ == "__main__":
     app=QApplication(sys.argv)
     window = DailyTracker()
