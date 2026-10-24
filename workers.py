@@ -177,9 +177,20 @@ class StreakStatsWorker(QThread):
             xs,ys=stats.streak_progress_over_time(df)
             habit_result=stats.longest_streak_by_habit(df)
             r={"best_len":best_len,"best_start":best_start,"best_end":best_end,
-               "day":day,"done":done,"total":total,
-               "week_start":week_start,"week_end":week_end,"rate":rate,
-               "xs":xs,"ys":ys,"habit_result":habit_result}
+            "day":day,"done":done,"total":total,
+            "week_start":week_start,"week_end":week_end,"rate":rate,
+            "xs":xs,"ys":ys,"habit_result":habit_result}
             self.fetched.emit(True,"",r)
         except Exception as e:
             self.fetched.emit(False,str(e),{})
+class WarmupWorker(QThread):
+    def run(self):
+        try:
+            import numpy
+            import pandas
+            import matplotlib
+            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+            from matplotlib.figure import Figure
+            import stats
+        except Exception as e:
+            print(f"Warmup failed: {e}")
