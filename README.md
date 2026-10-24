@@ -191,12 +191,12 @@ python dailytracker_ui.py
 - [x] Settings Page
 - [x] Longest Streak Statistics
 - [x] Habit-wise Analytics
+- [x] CSV Export
 ### Planned
 
-- [ ] Persistent notes until completed
 - [ ] Monthly Analytics
 - [ ] Completion Graphs (Matplotlib)
-- [ ] CSV Export
+
 ---
 
 # 📌 Version
