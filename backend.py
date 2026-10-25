@@ -1,6 +1,14 @@
 import sqlite3
 import os
 import datetime as dt
+import threading
+from functools import wraps
+def locked(fn):
+    @wraps(fn)
+    def wrapper(self,*a,**k):
+        with self.lock:
+            return fn(self,*a,**k)
+    return wrapper
 def resource_path(relative_path):
     import sys
     base_path=getattr(sys,"_MEIPASS",os.path.abspath("."))
@@ -17,6 +25,8 @@ class Database:
         self.db_path=db_path
         self.connection=None
         self.cursor=None
+        self.lock=threading.RLock()
+    @locked
     def connect(self):
         try:
             self.connection=sqlite3.connect(self.db_path,check_same_thread=False)
@@ -26,6 +36,8 @@ class Database:
             self.backfill_sort_order()
         except sqlite3.Error as e:
             print(f"Connection error: {str(e)}")
+            raise
+    @locked
     def update_habit_order(self,ordered_habit_ids):
         try:
             for index,habit_id in enumerate(ordered_habit_ids):
@@ -35,6 +47,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error updating habit order: {str(e)}")
             return False
+    @locked
     def backfill_sort_order(self):
         already_done=self.get_setting("sort_order_backfilled")
         if already_done=="1":
@@ -47,6 +60,7 @@ class Database:
                                     (index,habit_id))
             self.connection.commit()
         self.save_setting("sort_order_backfilled","1")
+    @locked
     def create_tables(self):
         self.cursor.executescript("""
                                 CREATE TABLE IF NOT EXISTS habits(
@@ -75,6 +89,7 @@ class Database:
                                 value TEXT NOT NULL
                                 );""")
         self.connection.commit()
+    @locked
     def add_habit(self,habit_name):
         try:
             self.cursor.execute("SELECT COALESCE(MAX(sort_order),-1)+1 FROM habits")
@@ -86,6 +101,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error adding Habit:{str(e)}")
             return None
+    @locked
     def get_habits(self):
         query="""SELECT habit_id,habit_name,created_at from habits ORDER BY sort_order"""
         self.cursor.execute(query)
@@ -94,6 +110,7 @@ class Database:
             (habit_id,habit_name,dt.date.fromisoformat(created_at))
             for habit_id,habit_name, created_at in rows
         ]
+    @locked
     def delete_habit(self,habit_id):
         try:
             query="""DELETE FROM habits WHERE habit_id =(?)"""
@@ -103,6 +120,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error deleting Habit:{str(e)}")
             return False
+    @locked
     def save_note(self,note_text,note_date=None):
         if note_date is None:
             note_date=dt.date.today()
@@ -110,23 +128,25 @@ class Database:
             query="""INSERT INTO notes (note,date)
                     VALUES (?,?)
                     ON CONFLICT(date) DO UPDATE SET note = excluded.note"""
-            self.cursor.execute(query,(note_text,note_date))
+            self.cursor.execute(query,(note_text,note_date.isoformat()))
             self.connection.commit()
             return True
         except sqlite3.Error as e:
             print(f"Error Saving Note: {str(e)}")
             return False
+    @locked
     def get_note(self,note_date=None):
         if note_date is None:
             note_date=dt.date.today()
         try:
             query="""SELECT note FROM notes WHERE date = ?"""
-            self.cursor.execute(query,(note_date,))
+            self.cursor.execute(query,(note_date.isoformat(),))
             row=self.cursor.fetchone()
             return row[0] if row else ""
         except sqlite3.Error as e:
             print(f"Error Fetching Note: {str(e)}")
             return ""
+    @locked
     def mark_completed(self,habit_id,completed,log_date=None):
         if log_date is None :
             log_date=dt.date.today()
@@ -134,12 +154,13 @@ class Database:
             query="""INSERT INTO daily_log(habit_id,date,completed)
                      VALUES (?,?,?)
                      ON CONFLICT(habit_id,date) DO UPDATE SET completed= excluded.completed"""
-            self.cursor.execute(query,(habit_id,log_date,int(completed)))
+            self.cursor.execute(query,(habit_id,log_date.isoformat(),int(completed)))
             self.connection.commit()
             return True
         except sqlite3.Error as e:
             print(f"error makring completion: {str(e)}")
             return False
+    @locked
     def get_month_completion(self,year,month):
         try:
             query="""SELECT habit_id,date,completed FROM daily_log
@@ -153,6 +174,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error Fetching Completions: {str(e)}")
             return[]
+    @locked
     def get_completed_dates(self):
         try:
             query="""SELECT DISTINCT date from daily_log
@@ -164,6 +186,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error Fetching Completed Dates: {str(e)}")
             return []
+    @locked
     def get_setting(self,key,default=None):
         try:
             query="""SELECT value FROM settings WHERE key=?"""
@@ -173,6 +196,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error fetching setting: {str(e)}")
             return default
+    @locked
     def save_setting(self,key,value):
         try:
             query="""INSERT INTO settings(key,value)
@@ -184,6 +208,7 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error saving setting: {str(e)}")
             return False
+    @locked
     def update_habits(self,habit_name,habit_id):
         try:
             query="""UPDATE habits SET habit_name=? where habit_id=?"""
@@ -193,11 +218,13 @@ class Database:
         except sqlite3.Error as e:
             print(f"Error Updating Habit name: {str(e)}")
             return False
+    @locked
     def close_connection(self):
         if self.cursor:
             self.cursor.close()
         if self.connection:
             self.connection.close()
+    @locked
     def get_logs(self):
         try :
             query="""SELECT h.habit_id,h.habit_name,d.date,d.completed
@@ -214,9 +241,3 @@ class Database:
 if __name__ == "__main__":
     db=Database()
     db.connect()
-    import stats
-    df=stats.buildDataFrame(db.get_logs())
-    print(stats.longestStreak(df))
-    print(stats.best_day(df))
-    print(stats.best_week(df))
-    print(stats.longest_streak_by_habit(df))
