@@ -1,5 +1,8 @@
 import pandas as pd
 import datetime as dt
+import bisect
+import calendar
+from collections import defaultdict
 def buildDataFrame(rows):
     df=pd.DataFrame(rows,columns=["habit_id","habit_name","date","completed"])
     df['date']=pd.to_datetime(df['date'])
@@ -90,3 +93,69 @@ def streak_progress_over_time(df):
         xs.append(d)
         ys.append(streak)
     return xs,ys
+def compute_stats_page(rows,habits,today):
+    created=sorted(h[2] for h in habits)
+    def active_on(day):
+        return bisect.bisect_right(created,day)
+
+    done_by_day=defaultdict(int)
+    habit_days=defaultdict(set)
+    for habit_id,_name,day,completed in rows:
+        if completed:
+            done_by_day[day]+=1
+            habit_days[habit_id].add(day)
+
+    # donut: today
+    total=active_on(today)
+    done=min(done_by_day.get(today,0),total)
+
+    # monthly completion (last 6 months)
+    months=[]
+    y,m=today.year,today.month
+    for _ in range(6):
+        months.append((y,m))
+        m-=1
+        if m==0:
+            m=12
+            y-=1
+    months.reverse()
+    month_labels,month_values=[],[]
+    for y,m in months:
+        first=dt.date(y,m,1)
+        last=min(dt.date(y,m,calendar.monthrange(y,m)[1]),today)
+        possible=0
+        achieved=0
+        day=first
+        while day<=last:
+            possible+=active_on(day)
+            achieved+=done_by_day.get(day,0)
+            day+=dt.timedelta(days=1)
+        month_labels.append(calendar.month_abbr[m])
+        month_values.append(round(achieved*100/possible) if possible else 0)
+
+    # last 7 days
+    day_labels,day_values=[],[]
+    for i in range(6,-1,-1):
+        day=today-dt.timedelta(days=i)
+        active=active_on(day)
+        rate=done_by_day.get(day,0)*100/active if active else 0
+        day_labels.append(day.strftime("%d %b"))
+        day_values.append(round(min(rate,100)))
+
+    # best habit this month
+    month_start=today.replace(day=1)
+    best=None
+    for habit_id,name,created_at in habits:
+        start=max(created_at,month_start)
+        days=(today-start).days+1
+        if days<=0:
+            continue
+        d=sum(1 for x in habit_days.get(habit_id,()) if start<=x<=today)
+        rate=d/days
+        if best is None or (rate,d)>(best[0],best[1]):
+            best=(rate,d,name)
+
+    return {"today":today,"total":total,"done":done,
+            "month_labels":month_labels,"month_values":month_values,
+            "day_labels":day_labels,"day_values":day_values,
+            "best":(best[2],round(best[0]*100)) if best else None}
