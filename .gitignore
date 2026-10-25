@@ -5,3 +5,6 @@ __pycache__/
 .vscode/
 venv/
 imports.txt
+build/
+dist/
+DailyTracker.spec

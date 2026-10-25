@@ -148,6 +148,12 @@ python dailytracker_ui.py
 
 ---
 
+   ## Download (Windows)
+
+   Get the latest build from the [Releases page](https://github.com/Nigil-Vignesh-S-R/daily-tracker/releases),
+   unzip it, and run `DailyTracker.exe`. No Python needed.
+
+---
 # 📷 Screenshots
 
 <img width="1200" height="762" alt="image" src="https://github.com/user-attachments/assets/c33e753a-c876-4cce-a732-081ff5ef1081" />
