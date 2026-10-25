@@ -169,6 +169,11 @@ class StreakStatsWorker(QThread):
         self.habits=habits
     def run(self):
         try:
+            if not self.rows:
+                self.fetched.emit(True,"",{"best_len":0,"best_start":None,"best_end":None,
+                "day":None,"done":0,"total":0,"week_start":None,"week_end":None,
+                "rate":0,"xs":[],"ys":[],"habit_result":[]})
+                return
             import stats
             df=stats.buildDataFrame(self.rows)
             best_len,best_start,best_end=stats.longestStreak(df)
@@ -194,3 +199,16 @@ class WarmupWorker(QThread):
             import stats
         except Exception as e:
             print(f"Warmup failed: {e}")
+class StatsPageWorker(QThread):
+    fetched=pyqtSignal(bool,str,dict)
+    def __init__(self,rows,habits,today):
+        super().__init__()
+        self.rows=rows
+        self.habits=habits
+        self.today=today
+    def run(self):
+        try:
+            import stats
+            self.fetched.emit(True,"",stats.compute_stats_page(self.rows,self.habits,self.today))
+        except Exception as e:
+            self.fetched.emit(False,str(e),{})
