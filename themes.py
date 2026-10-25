@@ -119,13 +119,13 @@ def get_dark_stylesheet():
                                }
                                QProgressBar{
                                border:none;
-                               border-radius:7px;
+                               border-radius:6px;
                                background:#363636;
-                               height:14px;
+                               height:12px;
                                }
                                QProgressBar::chunk{
                                background:#3B82F6;
-                               border-radius:7px;
+                               border-radius:6px;
                                }
                                QLineEdit{
                                background-color:#252525;
@@ -291,7 +291,7 @@ def get_dark_stylesheet():
                                border:2px solid rgba(220,38,38,150);
                                border-radius:4px;
                                background-color:rgba(220,38,38,55);
-                               image:url("./python/dailytracker/icons/cross.svg");
+                               image:url("./icons/cross.svg");
                                }
                                QCheckBox::indicator:hover{
                                border:2px solid rgba(239,68,68,200);
@@ -303,7 +303,7 @@ def get_dark_stylesheet():
                                QCheckBox::indicator:checked{
                                background-color:rgba(22,163,74,90);
                                border:2px solid rgba(22,163,74,220);
-                               image:url("./python/dailytracker/icons/check.svg");
+                               image:url("./icons/check.svg");
                                }
                                QCheckBox::indicator:checked:hover{
                                background-color:rgba(34,197,94,110);
@@ -341,7 +341,7 @@ def get_dark_stylesheet():
                                QLabel#bottomBarText{
                                color:#C5C5C5;
                                font-size:18px;
-                               font-weight:400px;
+                               font-weight:400;
                                }
                                QInputDialog{
                                background-color:#1E1E1E;
@@ -404,10 +404,6 @@ def get_dark_stylesheet():
                                 }
                                 QPushButton#navBtn:hover {
                                 background-color: rgba(251, 176, 59, 25);
-                                }
-                                QLabel#blankPageLabel {
-                                color: #5A5A5A;
-                                font-size: 28px;
                                 }
                                 QLabel#settingsTitle {
                                     color: #F5F5F5;
@@ -555,6 +551,24 @@ def get_dark_stylesheet():
                                 QFrame#statsCard:hover {
                                 border: 1px solid #3A3A3A;
                                 }
+                                QMessageBox{
+                                background-color:#1E1E1E;
+                                }
+                                QMessageBox QLabel{
+                                color:#E5E5E5;font-size:15px;
+                                }
+                                QMessageBox QPushButton{
+                                background-color:#3B82F6;
+                                color:white;
+                                border-radius:8px;
+                                padding:6px 18px;
+                                min-width:70px;
+                                min-height:30px;
+                                font-size:14px;
+                                }
+                                QMessageBox QPushButton:hover{
+                                background-color:#60A5FA;
+                                }
                                """
 def get_light_stylesheet():
     return """
@@ -657,7 +671,7 @@ def get_light_stylesheet():
                         selection-background-color:#3B82F6;
                         font-size:18px;
                     }
-                    QTextEdit:focus{
+                    QTextEdit::focus{
                         border:2px solid #3B82F6;
                     }
                     QListWidget{
@@ -683,13 +697,13 @@ def get_light_stylesheet():
                     }
                     QProgressBar{
                         border:none;
-                        border-radius:7px;
+                        border-radius:6px;
                         background:#E2E8F0;
-                        height:14px;
+                        height:12px;
                     }
                     QProgressBar::chunk{
                         background:#3B82F6;
-                        border-radius:7px;
+                        border-radius:6px;
                     }
                     QLineEdit{
                         background-color:#FFFFFF;
@@ -865,7 +879,7 @@ def get_light_stylesheet():
                         border:2px solid rgba(220,38,38,180);
                         border-radius:5px;
                         background-color:rgba(220,38,38,35);
-                        image:url("./python/dailytracker/icons/crossL.svg");
+                        image:url("./icons/crossL.svg");
                     }
                     QCheckBox::indicator:hover{
                         border:2px solid rgba(239,68,68,220);
@@ -877,7 +891,7 @@ def get_light_stylesheet():
                     QCheckBox::indicator:checked{
                         background-color:rgba(22,163,74,70);
                         border:2px solid rgba(22,163,74,220);
-                        image:url("./python/dailytracker/icons/checkL.svg");
+                        image:url("./icons/checkL.svg");
                     }
                     QCheckBox::indicator:checked:hover{
                         background-color:rgba(34,197,94,90);
@@ -976,10 +990,6 @@ def get_light_stylesheet():
                     }
                     QPushButton#navBtn:hover {
                     background-color: rgba(251, 176, 59, 35);
-                    }
-                    QLabel#blankPageLabel {
-                    color: #888888;
-                    font-size: 28px;
                     }
                     QLabel#settingsTitle {
                     color: #1E1E1E;
@@ -1126,5 +1136,23 @@ def get_light_stylesheet():
                     }
                     QFrame#statsCard:hover {
                     border: 1px solid #D8D8D8;
+                    }
+                    QMessageBox{
+                    background-color:#FFFFFF;
+                    }
+                    QMessageBox QLabel{
+                    color:#1F2937;font-size:15px;
+                    }
+                    QMessageBox QPushButton{
+                    background-color:#3B82F6;
+                    color:white;
+                    border-radius:8px;
+                    padding:6px 18px;
+                    min-width:70px;
+                    min-height:30px;
+                    font-size:14px;
+                    }
+                    QMessageBox QPushButton:hover{
+                    background-color:#60A5FA;
                     }
                     """
