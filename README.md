@@ -150,24 +150,25 @@ python dailytracker_ui.py
 
 # 📷 Screenshots
 
-<img width="1200" height="762" alt="image" src="https://github.com/user-attachments/assets/c33e753a-c876-4cce-a732-081ff5ef1081" />
+<img width="1197" height="766" alt="image" src="https://github.com/user-attachments/assets/ca797f4e-f70f-462e-aecf-518d692ba944" />
+
 **double clicks waking**
-<img width="1198" height="772" alt="image" src="https://github.com/user-attachments/assets/be145955-5fef-4776-9d07-ebb99098cc07" />
-<img width="1198" height="768" alt="image" src="https://github.com/user-attachments/assets/1bc4a6e1-1a0f-4e7f-acfa-5e3dd5e123ac" />
+<img width="1199" height="764" alt="image" src="https://github.com/user-attachments/assets/2887b5c7-dfc9-41a1-8894-54a50b6ec1bd" />
+<img width="1193" height="757" alt="image" src="https://github.com/user-attachments/assets/bbdcf4e4-9a68-4905-be11-773203039b60" />
 
 **clicks ok/press enter**
-<img width="1200" height="761" alt="image" src="https://github.com/user-attachments/assets/f52b0566-e133-4e0c-b80a-aed3bceb7bb6" />
+<img width="1201" height="764" alt="image" src="https://github.com/user-attachments/assets/aac00956-d035-472a-a39d-c16393965f21" />
+
 **cursor over dashboard**
-<img width="1208" height="766" alt="image" src="https://github.com/user-attachments/assets/e7ae2558-5540-45c7-b507-af68eb578a0d" />
+<img width="1198" height="766" alt="image" src="https://github.com/user-attachments/assets/e4377858-8314-4994-a385-e7f8daa3166c" />
 
+<img width="1198" height="770" alt="image" src="https://github.com/user-attachments/assets/eb0cfb23-f3ad-4241-b3e5-9e7befc5b5f3" />
 
-<img width="1195" height="769" alt="image" src="https://github.com/user-attachments/assets/3dac1024-97cb-497c-9d99-f6ef399ead2b" />
+<img width="1194" height="767" alt="image" src="https://github.com/user-attachments/assets/dcac283a-e0e3-46e2-b40e-6bd0bb3c9941" />
 
-<img width="1200" height="769" alt="image" src="https://github.com/user-attachments/assets/a354f7dc-dd56-4939-b0d8-d6bf108e3d69" />
-<img width="1196" height="768" alt="image" src="https://github.com/user-attachments/assets/531a8185-2f1b-49c3-90d1-28c622012a1d" />
+<img width="1208" height="776" alt="image" src="https://github.com/user-attachments/assets/45cd31e2-b4b3-4b62-bf45-a6f4330b135f" />
 
-**Under Construction**
-<img width="1199" height="767" alt="image" src="https://github.com/user-attachments/assets/949b97e8-2670-4188-8a04-de964ee77ae5" />
+<img width="1202" height="766" alt="image" src="https://github.com/user-attachments/assets/2f1d825a-e3ba-444c-a9c4-e2097af0164e" />
 
 ---
 
