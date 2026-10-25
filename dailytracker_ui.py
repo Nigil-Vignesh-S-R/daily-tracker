@@ -5,15 +5,19 @@ from PyQt5.QtWidgets import (QApplication,QWidget,QHBoxLayout,QFrame,QStackedWid
                              QVBoxLayout,QLabel,QListWidget,QPushButton,
                              QLineEdit,QCalendarWidget,QGridLayout,QToolButton,
                              QProgressBar,QTextEdit,QTableWidget,QHeaderView,QFileDialog,
-                             QTableWidgetItem,QCheckBox,QListWidgetItem,QInputDialog)
+                             QTableWidgetItem,QCheckBox,QListWidgetItem,QInputDialog,QMessageBox)
 from PyQt5.QtGui import QIcon,QTextCharFormat,QColor,QPainter
 from PyQt5.QtCore import Qt,QSize,QDate,QEvent,QTimer,QTime,QPropertyAnimation,QRect,QEasingCurve,QRectF
 from workers import(DBConnectWorker,addHabitWorker,getHabitWorker,
                     deleteHabitWorker,saveNoteWorker,getNoteWorker,
                     markCompleteWorker,getCompletionsWorker,getCompleteDaysWorker,
-                    updateOrderWorker,updateHabitWorker,getLogsWorker,StreakStatsWorker,WarmupWorker)
+                    updateOrderWorker,updateHabitWorker,getLogsWorker,StreakStatsWorker,
+                    WarmupWorker,StatsPageWorker)
 from themes import get_dark_stylesheet,get_light_stylesheet
 from backend import Database
+import os
+BASE_DIR=getattr(sys,"_MEIPASS",os.path.dirname(os.path.abspath(__file__)))
+os.chdir(BASE_DIR)
 class RoundedBar(QWidget):
     def __init__(self, value, maximum, fill="#3B82F6", track="#363636"):
         super().__init__()
@@ -35,13 +39,16 @@ class DailyTracker(QWidget):
         super().__init__()
         self.setWindowTitle("Daily Tracker")
         self.resize(1500, 900)
-        self.setWindowIcon(QIcon("./python/dailytracker/icons/tracker.png"))
+        self.setWindowIcon(QIcon("./icons/tracker.png"))
         self.db=Database()
         self.month_completions:set={}
         self.db_ready=False
         self.is_dark_theme=True
         self.streak_dirty=True
+        self.sp_dirty=True
+        self.sp_result=None
         self.completed_dates=[]
+        self.last_day=QDate.currentDate()
         self.initUI()
         self.clock_timer=QTimer(self)
         self.clock_timer.timeout.connect(self.updateClock)
@@ -55,10 +62,6 @@ class DailyTracker(QWidget):
         self.DBThread.finished.connect(self.DBThread.deleteLater) 
         QTimer.singleShot(300,self.startWarmup)
         QApplication.instance().installEventFilter(self)
-    def updateClock(self):
-        now=QDate.currentDate()
-        current_time=QTime.currentTime().toString("hh:mm AP")
-        self.clock_label.setText(current_time)
     def eventFilter(self, object, event):
         if event.type() == QEvent.MouseButtonPress:
             clicked_Widget=QApplication.widgetAt(event.globalPos())
@@ -80,9 +83,9 @@ class DailyTracker(QWidget):
             self.refreshIcon()
             self.updateThemeOptionStyles()
             if self.is_dark_theme:
-                self.set_btn_icon(self.theme_btn,"./python/dailytracker/icons/sun.svg")
+                self.set_btn_icon(self.theme_btn,"./icons/sun.svg")
             else:
-                self.set_btn_icon(self.theme_btn,"./python/dailytracker/icons/moon.svg")
+                self.set_btn_icon(self.theme_btn,"./icons/moon.svg")
             self.dimAdjacentMonths()
             self.styleCalendarHeader()
             self.habits_thread=getHabitWorker(self.db)
@@ -91,6 +94,7 @@ class DailyTracker(QWidget):
             self.habits_thread.start()
         else:
             print(f"DB Failed Error: {error}")
+            QMessageBox.critical(self,"Database error",f"Could not open the database:\n{error}")
     def loadNote(self):
         self.note_thread=getNoteWorker(self.db)
         self.note_thread.fetched.connect(self.noteFetched)
@@ -116,7 +120,7 @@ class DailyTracker(QWidget):
             item.setData(Qt.UserRole,habit_id)
             self.habit_list.addItem(item)
             self.habits.append((habit_id,habit_name,QDate.currentDate().toPyDate()))
-            self.streak_dirty=True
+            self.markDirty()
             self.buildHabitTable()
             self.loadCompletions()
             self.habit_name.clear()
@@ -126,12 +130,14 @@ class DailyTracker(QWidget):
     def habitDeleted(self,success,error,habit_id):
         self.delete_habit.setEnabled(True)
         if success:
-            row=self.habit_list.row(self.habit_list.currentItem())
-            self.habit_list.takeItem(row)
+            for i in range(self.habit_list.count()):
+                if self.habit_list.item(i).data(Qt.UserRole)==habit_id:
+                    self.habit_list.takeItem(i)
+                    break
             self.habit_list.clearSelection()
             self.habit_list.setCurrentItem(None)
-            self.habits=[h for h in self.habits if h[0]!= habit_id]
-            self.streak_dirty=True
+            self.habits=[h for h in self.habits if h[0]!=habit_id]
+            self.markDirty()
             self.buildHabitTable()
             self.loadCompletions()
         else:
@@ -213,7 +219,7 @@ class DailyTracker(QWidget):
         self.buildCentralLayout()
         self.buildRightLayout()
         self.homePage.setLayout(self.hbox)
-        self.statPage=self.buildBlankPage("Stats")
+        self.statPage=self.buildStatsPage()
         self.streakPage=self.buildStreakPage()
         self.settingPage=self.buildSettingPage()
         self.stack.addWidget(self.homePage)
@@ -287,10 +293,16 @@ class DailyTracker(QWidget):
     def overlay_anim_finished(self):
         if self.nav_overlay.width()<=60:
             self.nav_overlay.hide()
+    def markDirty(self):
+        self.streak_dirty=True
+        self.sp_dirty=True
     def switchPage(self,index):
         self.stack.setCurrentIndex(index)
         self.closeNavOverlay()
-        if index==2 and self.streak_dirty:
+        if index==1 and self.sp_dirty and self.db_ready:
+            self.sp_dirty=False
+            self.loadStatsPageData()
+        if index==2 and self.streak_dirty and self.db_ready:
             self.streak_dirty=False
             self.loadStreakPageData()
     def buildNavButton(self,icon_file,label_text):
@@ -299,20 +311,10 @@ class DailyTracker(QWidget):
         suffix="" if self.is_dark_theme else "L"
         name,ext=icon_file.rsplit(".",1)
         themed_icon=f"{name}{suffix}.{ext}"
-        self.set_btn_icon(btn,f"./python/dailytracker/icons/{themed_icon}",30)
+        self.set_btn_icon(btn,f"./icons/{themed_icon}",30)
         btn.setFixedHeight(44)
         btn.setCursor(Qt.PointingHandCursor)
         return btn
-    def buildBlankPage(self,title):
-        page=QWidget()
-        layout=QVBoxLayout()
-        layout.setAlignment(Qt.AlignCenter)
-        label=QLabel(f"{title} - Coming Soon")
-        label.setAlignment(Qt.AlignCenter)
-        label.setObjectName("blankPageLabel")
-        layout.addWidget(label)
-        page.setLayout(layout)
-        return page
     def buildIconRail(self):
         self.icon_rail=QFrame()
         self.icon_rail.setObjectName("iconRail")
@@ -337,7 +339,7 @@ class DailyTracker(QWidget):
     def buildIconOnlyButton(self,icon_file):
         btn=QPushButton()
         btn.setObjectName("railBtn")
-        self.set_btn_icon(btn,f"./python/dailytracker/icons/{icon_file}",20)
+        self.set_btn_icon(btn,f"./icons/{icon_file}",20)
         btn.setFixedSize(44,44)
         btn.setCursor(Qt.PointingHandCursor)
         return btn
@@ -391,7 +393,7 @@ class DailyTracker(QWidget):
             self.habit_error.setText(f"Error: {error}")
             self.habit_error.setVisible(True)
             return
-        self.streak_dirty=True
+        self.markDirty()
         self.habit_error.setVisible(False)
         updated_Habits=[]
         for hid,name,created_at in self.habits:
@@ -412,7 +414,7 @@ class DailyTracker(QWidget):
         #habit header
         self.habit_header = QHBoxLayout()
         self.habit_header.setSpacing(8)
-        self.habit_icon=self.seticon("./python/dailytracker/icons/habit.svg",28)    
+        self.habit_icon=self.seticon("./icons/habit.svg",28)    
         self.habit_label=QLabel("Habits List")
         self.habit_header.addWidget(self.habit_icon)
         self.habit_header.addWidget(self.habit_label)
@@ -424,7 +426,7 @@ class DailyTracker(QWidget):
         self.habit_list.model().rowsMoved.connect(self.onHabitsReordered)
         self.habit_list.itemDoubleClicked.connect(self.onRenameHabit)
         self.add_habit=QPushButton("Add Habit")
-        self.set_btn_icon(self.add_habit,"./python/dailytracker/icons/add.svg")
+        self.set_btn_icon(self.add_habit,"./icons/add.svg")
         self.add_habit.clicked.connect(self.addHabit)
         self.habit_name=QLineEdit()
         self.habit_name.setPlaceholderText("Enter a habit: ")
@@ -433,7 +435,7 @@ class DailyTracker(QWidget):
         self.habit_error.setObjectName("errorLabel")
         self.habit_error.setVisible(False)
         self.delete_habit=QPushButton("Delete Habit")
-        self.set_btn_icon(self.delete_habit,"./python/dailytracker/icons/del.svg")
+        self.set_btn_icon(self.delete_habit,"./icons/del.svg")
         self.delete_habit.clicked.connect(self.deleteHabit)
         self.add_habit.setCursor(Qt.PointingHandCursor)
         self.delete_habit.setCursor(Qt.PointingHandCursor)
@@ -455,7 +457,7 @@ class DailyTracker(QWidget):
         self.header_layout=QHBoxLayout()
         self.today_label=QLabel("Today")
         self.date_label=QLabel(QDate.currentDate().toString("dddd, d MMMM yyyy"))
-        self.date_icon=self.seticon("./python/dailytracker/icons/calendar.svg",60)
+        self.date_icon=self.seticon("./icons/calendar.svg",60)
         #left header and left text
         self.left_header=QHBoxLayout()
         self.left_text=QVBoxLayout()
@@ -486,7 +488,7 @@ class DailyTracker(QWidget):
         self.task_layout=QVBoxLayout()
         self.task_header=QHBoxLayout()
         self.task_header.addSpacing(8)    
-        self.task_icon=self.seticon("./python/dailytracker/icons/tasks.svg",35)
+        self.task_icon=self.seticon("./icons/tasks.svg",35)
         self.task_label=QLabel("Progression of Habits")
         self.task_header.addWidget(self.task_icon)
         self.task_header.addWidget(self.task_label)
@@ -526,7 +528,7 @@ class DailyTracker(QWidget):
         self.notes_layout=QVBoxLayout()
         self.notes_layout.setContentsMargins(15,15,15,15)
         self.note_hbox=QHBoxLayout()    
-        self.note_icon=self.seticon("./python/dailytracker/icons/notebook-pen-icon.svg",28)
+        self.note_icon=self.seticon("./icons/notebook-pen-icon.svg",28)
         self.notes_header=QLabel("Today's Notes")
         self.note_hbox.setSpacing(8)
         self.note_hbox.addWidget(self.note_icon)
@@ -537,7 +539,7 @@ class DailyTracker(QWidget):
         self.notes_box.setPlaceholderText("What's on your mind today...")
         self.notes_layout.addWidget(self.notes_box)
         self.save_btn=QPushButton(" Save Changes")
-        self.set_btn_icon(self.save_btn,"./python/dailytracker/icons/save.svg")
+        self.set_btn_icon(self.save_btn,"./icons/save.svg")
         self.save_btn.setFixedWidth(225)
         self.save_btn.setCursor(Qt.PointingHandCursor)
         self.notes_layout.addWidget(self.save_btn,alignment=Qt.AlignRight)
@@ -558,7 +560,7 @@ class DailyTracker(QWidget):
         self.calendar_layout=QVBoxLayout()
         self.calendar_header=QHBoxLayout()
         self.calendar_header.setSpacing(8)    
-        self.calendar_icon=self.seticon("./python/dailytracker/icons/cal icon.svg",35)
+        self.calendar_icon=self.seticon("./icons/cal icon.svg",35)
         self.calendar_label=QLabel("Calendar")
         self.calendar_header.addWidget(self.calendar_icon)
         self.calendar_header.addWidget(self.calendar_label)
@@ -567,8 +569,8 @@ class DailyTracker(QWidget):
         self.calendar.currentPageChanged.connect(self.updateTable)
         self.prev_btn=self.calendar.findChild(QToolButton,"qt_calendar_prevmonth")
         self.next_btn=self.calendar.findChild(QToolButton,"qt_calendar_nextmonth")
-        self.prev_btn.setIcon(QIcon("./python/dailytracker/icons/left_chevron.svg"))
-        self.next_btn.setIcon(QIcon("./python/dailytracker/icons/right_chevron.svg"))
+        self.prev_btn.setIcon(QIcon("./icons/left_chevron.svg"))
+        self.next_btn.setIcon(QIcon("./icons/right_chevron.svg"))
         self.prev_btn.setIconSize(QSize(18,18))
         self.next_btn.setIconSize(QSize(18,18))
         self.calendar.setGridVisible(False)
@@ -584,9 +586,9 @@ class DailyTracker(QWidget):
         self.stats_header=QHBoxLayout()
         self.stats_header.addSpacing(8)
         if self.is_dark_theme:
-            self.stats_icon=self.seticon("./python/dailytracker/icons/bar.svg",35)
+            self.stats_icon=self.seticon("./icons/bar.svg",35)
         else:
-            self.stats_icon=self.seticon("./python/dailytracker/icons/barL.svg",35)
+            self.stats_icon=self.seticon("./icons/barL.svg",35)
         self.stats_label=QLabel("Stats")
         self.stats_header.addWidget(self.stats_icon)
         self.stats_header.addWidget(self.stats_label)
@@ -689,28 +691,30 @@ class DailyTracker(QWidget):
         label.setPixmap(QIcon(path).pixmap(size,size))
     def refreshIcon(self):
         suffix="" if self.is_dark_theme else "L"
-        self.update_icon(self.habit_icon,f"./python/dailytracker/icons/habit{suffix}.svg",28)
-        self.update_icon(self.task_icon,f"./python/dailytracker/icons/tasks{suffix}.svg",35)
-        self.update_icon(self.note_icon,f"./python/dailytracker/icons/notebook-pen-icon{suffix}.svg",28)
-        self.update_icon(self.calendar_icon,f"./python/dailytracker/icons/cal icon{suffix}.svg",35)
-        self.prev_btn.setIcon(QIcon(f"./python/dailytracker/icons/left_chevron{suffix}.svg"))
-        self.next_btn.setIcon(QIcon(f"./python/dailytracker/icons/right_chevron{suffix}.svg"))
-        self.update_icon(self.stats_icon,f"./python/dailytracker/icons/bar{suffix}.svg",35)  
-        self.set_btn_icon(self.rail_home,f"./python/dailytracker/icons/home{suffix}.svg",30)
-        self.set_btn_icon(self.rail_stats,f"./python/dailytracker/icons/bar{suffix}.svg",30)
-        self.set_btn_icon(self.rail_setting,f"./python/dailytracker/icons/setting{suffix}.svg",30)
-        self.set_btn_icon(self.nav_home,f"./python/dailytracker/icons/home{suffix}.svg",30)
-        self.set_btn_icon(self.nav_stats,f"./python/dailytracker/icons/bar{suffix}.svg",30)
-        self.set_btn_icon(self.nav_setting,f"./python/dailytracker/icons/setting{suffix}.svg",30)
-        self.update_icon(self.appearance_icon,f"./python/dailytracker/icons/theme{suffix}.svg",22)
-        self.update_icon(self.data_icon,f"./python/dailytracker/icons/data{suffix}.svg",22)
-        self.update_icon(self.about_icon,f"./python/dailytracker/icons/info{suffix}.svg",22)
-        self.update_icon(self.longest_streak_card.icon_circle,f"./python/dailytracker/icons/trophy{suffix}.svg",22)
-        self.update_icon(self.current_streak_card.icon_circle,f"./python/dailytracker/icons/flame{suffix}.svg",22)
-        self.update_icon(self.best_day_card.icon_circle,f"./python/dailytracker/icons/medal{suffix}.svg",22)
-        self.update_icon(self.best_week_card.icon_circle,f"./python/dailytracker/icons/cal Icon{suffix}.svg",22)
-        self.update_icon(self.trend_icon,f"./python/dailytracker/icons/bargraph{suffix}.svg",28)
-        self.update_icon(self.habit_bars_icon,f"./python/dailytracker/icons/bar{suffix}.svg",28)
+        self.update_icon(self.habit_icon,f"./icons/habit{suffix}.svg",28)
+        self.update_icon(self.task_icon,f"./icons/tasks{suffix}.svg",35)
+        self.update_icon(self.note_icon,f"./icons/notebook-pen-icon{suffix}.svg",28)
+        self.update_icon(self.calendar_icon,f"./icons/cal icon{suffix}.svg",35)
+        self.prev_btn.setIcon(QIcon(f"./icons/left_chevron{suffix}.svg"))
+        self.next_btn.setIcon(QIcon(f"./icons/right_chevron{suffix}.svg"))
+        self.update_icon(self.stats_icon,f"./icons/bar{suffix}.svg",35)  
+        self.set_btn_icon(self.rail_home,f"./icons/home{suffix}.svg",30)
+        self.set_btn_icon(self.rail_stats,f"./icons/bar{suffix}.svg",30)
+        self.set_btn_icon(self.rail_setting,f"./icons/setting{suffix}.svg",30)
+        self.set_btn_icon(self.nav_home,f"./icons/home{suffix}.svg",30)
+        self.set_btn_icon(self.nav_stats,f"./icons/bar{suffix}.svg",30)
+        self.set_btn_icon(self.nav_setting,f"./icons/setting{suffix}.svg",30)
+        self.update_icon(self.appearance_icon,f"./icons/theme{suffix}.svg",22)
+        self.update_icon(self.data_icon,f"./icons/data{suffix}.svg",22)
+        self.update_icon(self.about_icon,f"./icons/info{suffix}.svg",22)
+        self.update_icon(self.longest_streak_card.icon_circle,f"./icons/trophy{suffix}.svg",22)
+        self.update_icon(self.current_streak_card.icon_circle,f"./icons/flame{suffix}.svg",22)
+        self.update_icon(self.best_day_card.icon_circle,f"./icons/medal{suffix}.svg",22)
+        self.update_icon(self.best_week_card.icon_circle,f"./icons/cal Icon{suffix}.svg",22)
+        self.update_icon(self.trend_icon,f"./icons/bargraph{suffix}.svg",28)
+        self.update_icon(self.habit_bars_icon,f"./icons/bar{suffix}.svg",28)
+        for label,name in self.sp_icons:
+            self.update_icon(label,f"./icons/{name}{suffix}.svg",26)
     def set_btn_icon(self,button:QPushButton,path:str,size=22):
         button.setIcon(QIcon(path))
         button.setIconSize(QSize(size,size))
@@ -903,7 +907,7 @@ class DailyTracker(QWidget):
             print(f"Error saving completion: {error}")
         else:
             day_set=self.month_completions.setdefault(date,set())
-            self.streak_dirty=True
+            self.markDirty()
             if completed:
                 day_set.add(habit_id)
             else:
@@ -942,13 +946,13 @@ class DailyTracker(QWidget):
         self.bottom_bar.setFixedHeight(36)
         bar_layout=QHBoxLayout()
         bar_layout.setContentsMargins(15,0,15,0)
-        self.bottom_icon=self.seticon("./python/dailytracker/icons/calendar.svg",35)
+        self.bottom_icon=self.seticon("./icons/calendar.svg",35)
         self.app_label=QLabel("    Daily Tracker  •  Stay Consistent, Achieve Greatness!")
         self.app_label.setObjectName("bottomBarText")
         self.theme_btn=QPushButton()
         self.theme_btn.setObjectName("themeToggleBtn")
         self.theme_btn.setFixedSize(40,40)
-        self.set_btn_icon(self.theme_btn,"./python/dailytracker/icons/sun.svg",18)
+        self.set_btn_icon(self.theme_btn,"./icons/sun.svg",18)
         self.theme_btn.setCursor(Qt.PointingHandCursor)
         self.theme_btn.clicked.connect(self.toggleTheme)
 
@@ -963,9 +967,9 @@ class DailyTracker(QWidget):
     def toggleTheme(self):
         self.is_dark_theme=not self.is_dark_theme
         if self.is_dark_theme:
-            self.set_btn_icon(self.theme_btn,"./python/dailytracker/icons/sun.svg")
+            self.set_btn_icon(self.theme_btn,"./icons/sun.svg")
         else:
-            self.set_btn_icon(self.theme_btn,"./python/dailytracker/icons/moon.svg")
+            self.set_btn_icon(self.theme_btn,"./icons/moon.svg")
         self.applyStyles()
         self.dimAdjacentMonths()
         self.refreshIcon()
@@ -974,7 +978,11 @@ class DailyTracker(QWidget):
         result=getattr(self,"streak_result",None)
         if result:
             self.drawStreakChart(result['xs'],result['ys'])
+            self.populateHabitStreakBars(result["habit_result"])
         self.updateThemeOptionStyles()
+        r=self.sp_result
+        if r:
+            self.drawStatsCharts(r)
     def buildSettingPage(self):
         page=QWidget()
         outer=QVBoxLayout()
@@ -998,11 +1006,11 @@ class DailyTracker(QWidget):
         theme_txt.addWidget(theme_desc)
         self.dark_option=QPushButton(" Dark")
         self.dark_option.setObjectName("themeOption")
-        self.set_btn_icon(self.dark_option,"./python/dailytracker/icons/moon.svg",18)
+        self.set_btn_icon(self.dark_option,"./icons/moon.svg",18)
         self.dark_option.clicked.connect(lambda: self.setThemeFromSettings(True))
         self.light_option=QPushButton(" Light")
         self.light_option.setObjectName("themeOption")
-        self.set_btn_icon(self.light_option,"./python/dailytracker/icons/sun.svg",18)
+        self.set_btn_icon(self.light_option,"./icons/sun.svg",18)
         self.light_option.clicked.connect(lambda: self.setThemeFromSettings(False))
         theme_row.addLayout(theme_txt)
         theme_row.addStretch()
@@ -1020,7 +1028,7 @@ class DailyTracker(QWidget):
         export_text.addWidget(export_label)
         export_text.addWidget(export_desc)
         self.export_btn=QPushButton("  Export CSV")
-        self.set_btn_icon(self.export_btn,"./python/dailytracker/icons/import.svg",18)
+        self.set_btn_icon(self.export_btn,"./icons/import.svg",18)
         self.export_btn.setObjectName("exportBtn")
         self.export_btn.setCursor(Qt.PointingHandCursor)
         export_row.addLayout(export_text)
@@ -1031,11 +1039,11 @@ class DailyTracker(QWidget):
 
         self.about_card,self.about_icon=self.buildSettingsCard("info.svg","About")
         about_row=QHBoxLayout()
-        about_icon=self.seticon("./python/dailytracker/icons/calendar.svg",50)
+        about_icon=self.seticon("./icons/calendar.svg",50)
         about_text=QVBoxLayout()
         app_name=QLabel("Daily Tracker")
         app_name.setObjectName("aboutTitle")
-        version_label=QLabel("Version 1.0.8")
+        version_label=QLabel("Version 1.0.9")
         version_label.setObjectName("versionBadge")
         stack_label=QLabel("Built with Python • PyQt5 • SQLite")
         stack_label.setObjectName("settingRowDesc")
@@ -1043,7 +1051,7 @@ class DailyTracker(QWidget):
         about_text.addWidget(version_label)
         about_text.addWidget(stack_label)
         self.github_btn=QPushButton("  View on GitHub")
-        self.set_btn_icon(self.github_btn,"./python/dailytracker/icons/github.svg",18)
+        self.set_btn_icon(self.github_btn,"./icons/github.svg",18)
         self.github_btn.clicked.connect(self.openGitHub)
         self.github_btn.setObjectName("githubBtn")
         self.github_btn.setCursor(Qt.PointingHandCursor)
@@ -1079,7 +1087,7 @@ class DailyTracker(QWidget):
         card.setObjectName("settingsCard")
         layout=QVBoxLayout()
         header=QHBoxLayout()
-        icon=self.seticon(f"./python/dailytracker/icons/{icon_file}",22)
+        icon=self.seticon(f"./icons/{icon_file}",22)
         label=QLabel(title_text)
         label.setObjectName("cardTitle")
         header.addWidget(icon)
@@ -1090,13 +1098,13 @@ class DailyTracker(QWidget):
         return card,icon
     def openGitHub(self):
         import webbrowser
-        webbrowser.open("https://github.com//Nigil-Vignesh-S-R/daily-tracker")
+        webbrowser.open("https://github.com/Nigil-Vignesh-S-R/daily-tracker")
     def buildStreakChartSection(self):
         card=QFrame()
         card.setObjectName("statsCard")
         layout=QVBoxLayout()
         header=QHBoxLayout()
-        self.trend_icon=self.seticon("./python/dailytracker/icons/bargraph.svg",28)
+        self.trend_icon=self.seticon("./icons/bargraph.svg",28)
         title=QLabel("Streak Progress Over Time")
         title.setObjectName("cardTitle")
         header.addWidget(self.trend_icon)
@@ -1152,7 +1160,7 @@ class DailyTracker(QWidget):
         card.setObjectName("statsCard")
         layout=QVBoxLayout()
         header=QHBoxLayout()
-        self.habit_bars_icon=self.seticon("./python/dailytracker/icons/bar.svg",28)
+        self.habit_bars_icon=self.seticon("./icons/bar.svg",28)
         title=QLabel("Longest Streak by Habit")
         title.setObjectName("cardTitle")
         header.addWidget(self.habit_bars_icon)
@@ -1242,7 +1250,7 @@ class DailyTracker(QWidget):
         suffix="" if self.is_dark_theme else "L"
         name,ext=icon_file.rsplit(".",1)
         themed_icon=f"{name}{suffix}.{ext}"
-        pix=QIcon(f"./python/dailytracker/icons/{themed_icon}").pixmap(22,22)
+        pix=QIcon(f"./icons/{themed_icon}").pixmap(22,22)
         icon_circle.setPixmap(pix)
         title_label=QLabel(title_text)
         title_label.setObjectName("statCardTitle")
@@ -1314,14 +1322,244 @@ class DailyTracker(QWidget):
     def csvReady(self,success,error,rows):
         self.export_btn.setEnabled(True)
         if not success:
-            print(f"Error exporting CSV: {error}")
+            QMessageBox.warning(self,"Export failed",str(error))
             return
-        with open(self.export_path,"w",newline="",encoding="utf-8") as f:
-            w=csv.writer(f)
-            w.writerow(["Date","Habit","Completed"])
-            for _,habit_name,log_date,completed in sorted(rows,key=lambda r:r[2]):
-                w.writerow([log_date,habit_name,"Yes" if completed else "No"])
+        try:
+            with open(self.export_path,"w",newline="",encoding="utf-8") as f:
+                w=csv.writer(f)
+                w.writerow(["Date","Habit","Completed"])
+                for _,habit_name,log_date,completed in sorted(rows,key=lambda r:r[2]):
+                    w.writerow([log_date,habit_name,"Yes" if completed else "No"])
+            QMessageBox.information(self,"Export complete",f"Saved to:\n{self.export_path}")
+        except OSError as e:
+            QMessageBox.warning(self,"Export failed",f"Could not write the file:\n{e}\n\nIf it's open in Excel, close it and try again.")
+    def buildStatsPage(self):
+        self.sp_icons=[]
+        self.sp_holders={}
+        self.sp_figs={}
+        self.sp_canvases={}
+        page=QWidget()
+        outer=QVBoxLayout()
+        outer.setContentsMargins(40,30,40,30)
+        outer.setSpacing(20)
+        header_layout=QVBoxLayout()
+        header_layout.setSpacing(2)
+        title=QLabel("Stats")
+        title.setObjectName("settingsTitle")
+        subtitle=QLabel("Insights into your habit journey")
+        subtitle.setObjectName("settingsSubtitle")
+        header_layout.addWidget(title)
+        header_layout.addWidget(subtitle)
+        outer.addLayout(header_layout)
+        top=QHBoxLayout()
+        top.setSpacing(16)
+        donut_card,self.sp_donut_sub=self.buildChartCard("donut","tasks","Daily Completion (Today)","")
+        monthly_card,_=self.buildChartCard("monthly","bar","Monthly Completion (%)","Month-wise completion percentage")
+        top.addWidget(donut_card,2)
+        top.addWidget(monthly_card,3)
+        bottom=QHBoxLayout()
+        bottom.setSpacing(16)
+        daily_card,_=self.buildChartCard("daily","bargraph","Daily Completion Rate (%)","Your daily completion rate over the last 7 days")
+        best_card=self.buildBestHabitCard()
+        bottom.addWidget(daily_card,3)
+        bottom.addWidget(best_card,2)
+        outer.addLayout(top,1)
+        outer.addLayout(bottom,1)
+        page.setLayout(outer)
+        return page
+    def buildChartCard(self,key,icon_name,title_text,sub_text):
+        card=QFrame()
+        card.setObjectName("statsCard")
+        layout=QVBoxLayout()
+        layout.setSpacing(8)
+        header=QHBoxLayout()
+        icon=self.seticon(f"./icons/{icon_name}.svg",26)
+        self.sp_icons.append((icon,icon_name))
+        title=QLabel(title_text)
+        title.setObjectName("cardTitle")
+        header.addWidget(icon)
+        header.addWidget(title)
+        header.addStretch()
+        sub=QLabel(sub_text)
+        sub.setObjectName("settingRowDesc")
+        holder=QVBoxLayout()
+        self.sp_holders[key]=holder
+        layout.addLayout(header)
+        layout.addWidget(sub)
+        layout.addLayout(holder,1)
+        card.setLayout(layout)
+        return card,sub
+    def buildBestHabitCard(self):
+        card=QFrame()
+        card.setObjectName("statsCard")
+        layout=QVBoxLayout()
+        layout.setSpacing(8)
+        header=QHBoxLayout()
+        icon=self.seticon("./icons/trophy.svg",26)
+        self.sp_icons.append((icon,"trophy"))
+        title=QLabel("Best Performing Habit")
+        title.setObjectName("cardTitle")
+        header.addWidget(icon)
+        header.addWidget(title)
+        header.addStretch()
+        self.sp_best_name=QLabel("—")
+        self.sp_best_name.setObjectName("statCardValue")
+        self.sp_best_pct=QLabel("")
+        self.sp_best_pct.setObjectName("streakDays")
+        self.sp_best_sub=QLabel("completion rate this month")
+        self.sp_best_sub.setObjectName("settingRowDesc")
+        self.sp_best_msg=QLabel("Keep it up! You're doing great.")
+        self.sp_best_msg.setObjectName("statCardSub")
+        layout.addLayout(header)
+        layout.addStretch()
+        layout.addWidget(self.sp_best_name)
+        layout.addWidget(self.sp_best_pct)
+        layout.addWidget(self.sp_best_sub)
+        layout.addStretch()
+        layout.addWidget(self.sp_best_msg)
+        card.setLayout(layout)
+        return card
+    def loadStatsPageData(self):
+        self.sp_logs_thread=getLogsWorker(self.db)
+        self.sp_logs_thread.fetched.connect(self.statsRowsFetched)
+        self.sp_logs_thread.finished.connect(self.sp_logs_thread.deleteLater)
+        self.sp_logs_thread.start()
+    def statsRowsFetched(self,success,error,rows):
+        if not success:
+            print(f"Error loading stats page data: {error}")
+            self.sp_dirty=True
+            return
+        self.sp_thread=StatsPageWorker(rows,self.habits,QDate.currentDate().toPyDate())
+        self.sp_thread.fetched.connect(self.statsPageReady)
+        self.sp_thread.finished.connect(self.sp_thread.deleteLater)
+        self.sp_thread.start()
+    def statsPageReady(self,success,error,result):
+        if not success:
+            print(f"Error computing stats page: {error}")
+            self.sp_dirty=True
+            return
+        self.sp_result=result
+        self.sp_donut_sub.setText(result["today"].strftime("%d %b %Y"))
+        best=result["best"]
+        if best:
+            self.sp_best_name.setText(best[0])
+            self.sp_best_pct.setText(f"{best[1]}%")
+            self.sp_best_sub.setText("completion rate this month")
+        else:
+            self.sp_best_name.setText("—")
+            self.sp_best_pct.setText("")
+            self.sp_best_sub.setText("No data yet")
+        self.drawStatsCharts(result)
+    def chartColors(self):
+        if self.is_dark_theme:
+            return {"bg":"#1A1A1A","text":"#C5C5C5","strong":"#F5F5F5","accent":"#FBB03B",
+                    "good":"#22A04B","bad":"#DC3545","grid":"#333333"}
+        return {"bg":"#FFFFFF","text":"#4B4B4B","strong":"#1E1E1E","accent":"#A66A00",
+                "good":"#16A34A","bad":"#DC2626","grid":"#E0E0E0"}
+    def getSpFigure(self,key):
+        if key not in self.sp_canvases:
+            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+            from matplotlib.figure import Figure
+            fig=Figure(figsize=(4,3))
+            canvas=FigureCanvas(fig)
+            canvas.setStyleSheet("background:transparent;")
+            self.sp_holders[key].addWidget(canvas)
+            self.sp_figs[key]=fig
+            self.sp_canvases[key]=canvas
+        return self.sp_figs[key],self.sp_canvases[key]
+    def styleAxes(self,ax,c):
+        ax.set_facecolor(c["bg"])
+        ax.tick_params(colors=c["text"],labelsize=8)
+        for side in ("top","right"):
+            ax.spines[side].set_visible(False)
+        for side in ("left","bottom"):
+            ax.spines[side].set_color(c["grid"])
+        ax.set_ylim(0,110)
+        ax.set_yticks([0,25,50,75,100])
+        ax.set_yticklabels([f"{v}%" for v in (0,25,50,75,100)])
+        ax.yaxis.grid(True,linestyle="--",color=c["grid"])
+        ax.set_axisbelow(True)
+    def drawStatsCharts(self,r):
+        self.drawDonut(r["done"],r["total"])
+        self.drawMonthly(r["month_labels"],r["month_values"])
+        self.drawDaily(r["day_labels"],r["day_values"])
+    def drawDonut(self,done,total):
+        from matplotlib.patches import Patch
+        fig,canvas=self.getSpFigure("donut")
+        c=self.chartColors()
+        fig.clear()
+        fig.patch.set_facecolor(c["bg"])
+        ax=fig.add_subplot(111)
+        ax.set_facecolor(c["bg"])
+        ring={"width":0.38,"edgecolor":c["bg"],"linewidth":2}
+        if total>0:
+            ax.pie([done,total-done],colors=[c["good"],c["bad"]],startangle=90,
+                counterclock=False,wedgeprops=ring)
+        else:
+            ax.pie([1],colors=[c["grid"]],startangle=90,wedgeprops=ring)
+        ax.text(0,0.08,str(total),ha="center",va="center",fontsize=22,
+                fontweight="bold",color=c["strong"])
+        ax.text(0,-0.2,"Total Habits",ha="center",va="center",fontsize=9,color=c["text"])
+        ax.set_aspect("equal")
+        ax.legend(handles=[Patch(color=c["good"],label=f"Completed ({done})"),
+                        Patch(color=c["bad"],label=f"Not Completed ({total-done})")],
+                loc="upper center",bbox_to_anchor=(0.5,0.0),ncol=2,frameon=False,
+                labelcolor=c["text"],fontsize=9)
+        fig.tight_layout()
+        canvas.draw()
+    def drawMonthly(self,labels,values):
+        fig,canvas=self.getSpFigure("monthly")
+        c=self.chartColors()
+        fig.clear()
+        fig.patch.set_facecolor(c["bg"])
+        ax=fig.add_subplot(111)
+        self.styleAxes(ax,c)
+        bars=ax.bar(labels,values,color=c["accent"],width=0.55)
+        for rect,v in zip(bars,values):
+            ax.text(rect.get_x()+rect.get_width()/2,v+2,f"{v}%",ha="center",
+                    va="bottom",fontsize=9,color=c["strong"])
+        fig.tight_layout()
+        canvas.draw()
+    def drawDaily(self,labels,values):
+        fig,canvas=self.getSpFigure("daily")
+        c=self.chartColors()
+        fig.clear()
+        fig.patch.set_facecolor(c["bg"])
+        ax=fig.add_subplot(111)
+        self.styleAxes(ax,c)
+        xs=list(range(len(values)))
+        ax.plot(xs,values,color=c["accent"],linewidth=2,marker="o",markersize=6)
+        ax.fill_between(xs,values,color=c["accent"],alpha=0.15)
+        ax.set_xticks(xs)
+        ax.set_xticklabels(labels)
+        for x,v in zip(xs,values):
+            ax.annotate(f"{v}%",(x,v),textcoords="offset points",xytext=(0,8),
+                        ha="center",fontsize=8,color=c["strong"])
+        fig.tight_layout()
+        canvas.draw()
+    def updateClock(self):
+        self.clock_label.setText(QTime.currentTime().toString("hh:mm AP"))
+        today=QDate.currentDate()
+        if today!=self.last_day:
+            self.last_day=today
+            self.date_label.setText(today.toString("dddd, d MMMM yyyy"))
+            self.markDirty()
+            self.buildHabitTable()
+            self.loadCompletions()
+    def closeEvent(self,event):
+        try:
+            self.db.close_connection()
+        except Exception:
+            pass
+        event.accept()
 if __name__ == "__main__":
+    def log_exception(t,v,tb):
+        import traceback,datetime
+        with open(os.path.join(os.path.expanduser("~"),"dailytracker_error.log"),"a",encoding="utf-8") as f:
+            f.write(f"\n[{datetime.datetime.now()}]\n")
+            traceback.print_exception(t,v,tb,file=f)
+        traceback.print_exception(t,v,tb)
+    sys.excepthook=log_exception
     app=QApplication(sys.argv)
     window = DailyTracker()
     window.show()
