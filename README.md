@@ -75,6 +75,16 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
+## 📈 Stats & Streak Analytics
+
+- Stats page: today's completion donut, monthly completion chart, 7-day completion rate, and best performing habit.
+- Streak page: longest streak, current streak, best day, best week, and per-habit streak bars.
+- Charts built with Matplotlib and follow the active theme.
+- Analytics are computed in background threads, so the interface stays responsive.
+- Pages reload only when your data changes.
+
+---
+
 ## ⚡ Responsive User Experience
 
 - Database operations run in background threads using **QThread**.
@@ -103,6 +113,8 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 - Python
 - PyQt5
 - SQLite3
+- pandas
+- Matplotlib
 - Qt Signals & Slots
 - QThread
 
@@ -170,6 +182,8 @@ python dailytracker_ui.py
 - ✅ Responsive UI using QThread
 - ✅ SQLite Database
 - ✅ Modern Dark & Light Theme
+- ✅ Stats Page
+- ✅ Streak Analytics
 
 ---
 
@@ -192,21 +206,20 @@ python dailytracker_ui.py
 - [x] Longest Streak Statistics
 - [x] Habit-wise Analytics
 - [x] CSV Export
-### Planned
-
-- [ ] Monthly Analytics
-- [ ] Completion Graphs (Matplotlib)
+- [x] Monthly Analytics
+- [x] Completion Graphs (Matplotlib)
 
 ---
 
 # 📌 Version
 
-**Current Version:** `v1.0.8`
+**Current Version:** `v1.0.9`
 
 ### Recent Improvements
 
-- Built Streak page
-- updated version badge in settings and Improved user experience by adding graph.
+- Added the Stats page (completion donut, monthly chart, 7-day rate, best habit)
+- Streak page now shows best day, best week, and per-habit streak bars
+- Faster Streak page loading and fixes for chart and layout issues
 
 ---
 
