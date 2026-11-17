@@ -246,4 +246,5 @@ This project was developed to improve productivity:
 If you found this project useful, consider giving it a **⭐ Star** on GitHub.
 
 It helps others discover the project and motivates future development.
+
 **Author:** S R Nigil Vignesh
