@@ -173,7 +173,7 @@ class DailyTracker(QWidget):
         if self.is_dark_theme:
             weekDay_Format.setForeground(QColor("#FBB03B"))
         else:
-            weekDay_Format.setForeground(QColor("#A66A00"))
+            weekDay_Format.setForeground(QColor("#6D28D9"))
         for day in[Qt.Monday,Qt.Tuesday,Qt.Wednesday,Qt.Thursday,Qt.Friday]:
             self.calendar.setWeekdayTextFormat(day,weekDay_Format)
     def dimAdjacentMonths(self):
@@ -185,7 +185,7 @@ class DailyTracker(QWidget):
         if self.is_dark_theme:
             normal_format.setForeground(QColor("#FBB03B"))
         else:
-            normal_format.setForeground(QColor("#A66A00"))
+            normal_format.setForeground(QColor("#6D28D9"))
         first_of_month=QDate(current_year,current_month,1)
         grid_start=first_of_month.addDays(-(first_of_month.dayOfWeek()-1))
         for i in range(42):
@@ -697,6 +697,8 @@ class DailyTracker(QWidget):
         self.update_icon(self.calendar_icon,f"./icons/cal icon{suffix}.svg",35)
         self.prev_btn.setIcon(QIcon(f"./icons/left_chevron{suffix}.svg"))
         self.next_btn.setIcon(QIcon(f"./icons/right_chevron{suffix}.svg"))
+        self.export_btn.setIcon(QIcon(f"./icons/import{suffix}.svg"))
+        self.github_btn.setIcon(QIcon(f"./icons/github{suffix}.svg"))
         self.update_icon(self.stats_icon,f"./icons/bar{suffix}.svg",35)  
         self.set_btn_icon(self.rail_home,f"./icons/home{suffix}.svg",30)
         self.set_btn_icon(self.rail_stats,f"./icons/bar{suffix}.svg",30)
@@ -1028,7 +1030,8 @@ class DailyTracker(QWidget):
         export_text.addWidget(export_label)
         export_text.addWidget(export_desc)
         self.export_btn=QPushButton("  Export CSV")
-        self.set_btn_icon(self.export_btn,"./icons/import.svg",18)
+        self.export_icon="./icons/import.svg"
+        self.set_btn_icon(self.export_btn,self.export_icon,18)
         self.export_btn.setObjectName("exportBtn")
         self.export_btn.setCursor(Qt.PointingHandCursor)
         export_row.addLayout(export_text)
@@ -1051,7 +1054,8 @@ class DailyTracker(QWidget):
         about_text.addWidget(version_label)
         about_text.addWidget(stack_label)
         self.github_btn=QPushButton("  View on GitHub")
-        self.set_btn_icon(self.github_btn,"./icons/github.svg",18)
+        self.github_icon="./icons/github.svg"
+        self.set_btn_icon(self.github_btn,self.github_icon,18)
         self.github_btn.clicked.connect(self.openGitHub)
         self.github_btn.setObjectName("githubBtn")
         self.github_btn.setCursor(Qt.PointingHandCursor)
@@ -1139,8 +1143,8 @@ class DailyTracker(QWidget):
         self.ensureStreakCanvas()
         self.streak_figure.clear()
         ax=self.streak_figure.add_subplot(111)
-        bg_color="#1A1A1A" if self.is_dark_theme else "#FFFFFF"
-        line_color="#FBB03B" if self.is_dark_theme else "#A66A00"
+        bg_color="#212227" if self.is_dark_theme else "#E4EBF4"
+        line_color="#FBB03B" if self.is_dark_theme else "#6D28D9"
         text_color="#C5C5C5" if self.is_dark_theme else "#4B4B4B"
 
         self.streak_figure.patch.set_facecolor(bg_color)
@@ -1297,7 +1301,7 @@ class DailyTracker(QWidget):
                 )
         current=self.calculateStreak(self.completed_dates)
         self.current_streak_card.value_label.setText(f"{current} Days")
-        self.current_streak_card.sub_label.setText("Keep it going! You've got this! 💪")
+        self.current_streak_card.sub_label.setText("Keep it going! You've got this! ")
         if result['day']:
             self.best_day_card.value_label.setText(f"{result['done']} / {result['total']}")
             pct=round(result["done"]*100/result["total"]) if result["total"] else 0
@@ -1452,10 +1456,10 @@ class DailyTracker(QWidget):
         self.drawStatsCharts(result)
     def chartColors(self):
         if self.is_dark_theme:
-            return {"bg":"#1A1A1A","text":"#C5C5C5","strong":"#F5F5F5","accent":"#FBB03B",
+            return {"bg":"#212227","text":"#C5C5C5","strong":"#F5F5F5","accent":"#FBB03B",
                     "good":"#22A04B","bad":"#DC3545","grid":"#333333"}
-        return {"bg":"#FFFFFF","text":"#4B4B4B","strong":"#1E1E1E","accent":"#A66A00",
-                "good":"#16A34A","bad":"#DC2626","grid":"#E0E0E0"}
+        return {"bg":"#E4EBF4","text":"#4B4B4B","strong":"#1E1E1E","accent":"#6D28D9",
+                "good":"#34A853","bad":"#EA4335","grid":"#E0E0E0"}
     def getSpFigure(self,key):
         if key not in self.sp_canvases:
             from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
