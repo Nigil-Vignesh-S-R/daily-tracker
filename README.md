@@ -1,16 +1,13 @@
-# 📖 Daily Tracker
-
-**Author:** S R Nigil Vignesh
-
+# Daily Tracker
 Daily Tracker is a modern desktop habit-tracking application built with **Python**, **PyQt5**, and **SQLite3**. It helps users build consistent routines by allowing them to create habits, track daily progress, maintain streaks, and write daily notes through a clean and responsive desktop interface.
 
 Unlike web-based habit trackers, Daily Tracker stores all data locally using SQLite, making it lightweight, portable, and easy to set up—no external database server is required.
 
 ---
 
-# ✨ Features
+# Features
 
-## 📝 Habit Management
+## Habit Management
 
 - Create and delete habits with ease.
 - Prevents duplicate habit entries.
@@ -19,7 +16,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 - Preserves the creation date of every habit.
 ---
 
-## ✅ Daily Habit Tracking
+## Daily Habit Tracking
 
 - Mark habits as completed for the current day.
 - Completion history is permanently stored.
@@ -29,7 +26,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 - Completion indicators are only shown from a habit's creation date onward.
 ---
 
-## 📊 Progress Dashboard
+## Progress Dashboard
 
 - Live completion percentage.
 - Progress bar with visual feedback.
@@ -38,7 +35,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## 🔥 Streak Tracking
+## Streak Tracking
 
 - Automatically calculates your current streak.
 - Restores streak correctly after restarting the application.
@@ -48,7 +45,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## 📅 Interactive Calendar
+## Interactive Calendar
 
 - Navigate seamlessly between months.
 - Automatically synchronizes with the habit table.
@@ -57,7 +54,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## 📒 Daily Notes
+## Daily Notes
 
 - Write notes for each day.
 - Automatically saves your notes.
@@ -65,7 +62,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## 💾 Local SQLite Database
+## Local SQLite Database
 
 - Stores habits, completion records, and notes locally.
 - No database installation required.
@@ -75,7 +72,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## 📈 Stats & Streak Analytics
+## Stats & Streak Analytics
 
 - Stats page: today's completion donut, monthly completion chart, 7-day completion rate, and best performing habit.
 - Streak page: longest streak, current streak, best day, best week, and per-habit streak bars.
@@ -85,7 +82,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## ⚡ Responsive User Experience
+## Responsive User Experience
 
 - Database operations run in background threads using **QThread**.
 - Prevents the interface from freezing during database operations.
@@ -94,7 +91,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-## 🎨 Modern Desktop Interface
+## Modern Desktop Interface
 
 - Modern dark & light themes.
 - Custom SVG icons.
@@ -108,7 +105,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-# 🛠️ Tech Stack
+# Tech Stack
 
 - Python
 - PyQt5
@@ -120,7 +117,7 @@ Unlike web-based habit trackers, Daily Tracker stores all data locally using SQL
 
 ---
 
-# 🚀 Installation
+# Installation
 
 ## 1. Clone the repository
 
@@ -154,7 +151,7 @@ python dailytracker_ui.py
    unzip it, and run `DailyTracker.exe`. No Python needed.
 
 ---
-# 📷 Screenshots
+# Screenshots
 
 <img width="1197" height="766" alt="image" src="https://github.com/user-attachments/assets/ca797f4e-f70f-462e-aecf-518d692ba944" />
 
@@ -178,7 +175,7 @@ python dailytracker_ui.py
 
 ---
 
-# 📈 Current Features
+# Current Features
 
 - ✅ Habit Management
 - ✅ Daily Habit Tracking
@@ -194,7 +191,7 @@ python dailytracker_ui.py
 
 ---
 
-# 🚀 Roadmap
+# Roadmap
 
 ### Completed
 
@@ -218,7 +215,7 @@ python dailytracker_ui.py
 
 ---
 
-# 📌 Version
+# Version
 
 **Current Version:** `v1.0.9`
 
@@ -230,7 +227,7 @@ python dailytracker_ui.py
 
 ---
 
-# 🎯 Objectives
+# Objectives
 
 This project was developed to improve productivity:
 
@@ -244,8 +241,10 @@ This project was developed to improve productivity:
 
 ---
 
-## ⭐ Support
+## Support
 
 If you found this project useful, consider giving it a **⭐ Star** on GitHub.
 
 It helps others discover the project and motivates future development.
+
+**Author:** S R Nigil Vignesh
