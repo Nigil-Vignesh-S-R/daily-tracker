@@ -1144,7 +1144,7 @@ class DailyTracker(QWidget):
         self.streak_figure.clear()
         ax=self.streak_figure.add_subplot(111)
         bg_color="#212227" if self.is_dark_theme else "#E4EBF4"
-        line_color="#FBB03B" if self.is_dark_theme else "#6D28D9"
+        line_color="#FF9F1C" if self.is_dark_theme else "#6D28D9"
         text_color="#C5C5C5" if self.is_dark_theme else "#4B4B4B"
 
         self.streak_figure.patch.set_facecolor(bg_color)
@@ -1456,7 +1456,7 @@ class DailyTracker(QWidget):
         self.drawStatsCharts(result)
     def chartColors(self):
         if self.is_dark_theme:
-            return {"bg":"#212227","text":"#C5C5C5","strong":"#F5F5F5","accent":"#FBB03B",
+            return {"bg":"#212227","text":"#C5C5C5","strong":"#F5F5F5","accent":"#FF9F1C",
                     "good":"#22A04B","bad":"#DC3545","grid":"#333333"}
         return {"bg":"#E4EBF4","text":"#4B4B4B","strong":"#1E1E1E","accent":"#6D28D9",
                 "good":"#34A853","bad":"#EA4335","grid":"#E0E0E0"}

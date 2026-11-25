@@ -8,10 +8,10 @@ DARK = {
     # text
     "TEXT": "#E8E9EC", "TEXT2": "#A2A5AE", "MUTED": "#727683",
     # gold accent
-    "GOLD": "#FBB03B", "GOLD_SOFT": "rgba(251,176,59,28)", "GOLD_SOFT2": "rgba(251,176,59,52)",
-    "GOLD_BORDER": "rgba(251,176,59,120)",
-    "GOLD_BTN": "#FBB03B", "GOLD_BTN_HOVER": "#FFC25E", "GOLD_BTN_PRESS": "#E39F2E",
-    "GOLD_BTN_TEXT": "#1A1B1F",
+    "GOLD": "#FF9F1C", "GOLD_SOFT": "rgba(255,159,28,32)", "GOLD_SOFT2": "rgba(255,159,28,60)",
+    "GOLD_BORDER": "rgba(255,159,28,140)",
+    "GOLD_BTN": "#FF9F1C", "GOLD_BTN_HOVER": "#FFB347", "GOLD_BTN_PRESS": "#E88A0A",
+    "GOLD_BTN_TEXT": "#1A1B1F", "HEADER_TEXT": "#FF9F1C",
     # blue (primary actions)
     "BLUE": "#3B82F6", "BLUE_HOVER": "#5C9BF8", "BLUE_PRESS": "#2563EB",
     "BLUE_BORDER": "#2F5FB3", "BLUE_SOFT": "rgba(59,130,246,50)",
