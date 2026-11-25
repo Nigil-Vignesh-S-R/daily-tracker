@@ -171,7 +171,7 @@ class DailyTracker(QWidget):
     def styleCalendarHeader(self):
         weekDay_Format=QTextCharFormat()
         if self.is_dark_theme:
-            weekDay_Format.setForeground(QColor("#FBB03B"))
+            weekDay_Format.setForeground(QColor("#FF9F1C"))
         else:
             weekDay_Format.setForeground(QColor("#6D28D9"))
         for day in[Qt.Monday,Qt.Tuesday,Qt.Wednesday,Qt.Thursday,Qt.Friday]:
@@ -183,7 +183,7 @@ class DailyTracker(QWidget):
         dim_format.setForeground(QColor("#4A4A4A"))
         normal_format=QTextCharFormat()
         if self.is_dark_theme:
-            normal_format.setForeground(QColor("#FBB03B"))
+            normal_format.setForeground(QColor("#FF9F1C"))
         else:
             normal_format.setForeground(QColor("#6D28D9"))
         first_of_month=QDate(current_year,current_month,1)
