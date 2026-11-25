@@ -152,26 +152,27 @@ python dailytracker_ui.py
 
 ---
 # Screenshots
-
-<img width="1197" height="766" alt="image" src="https://github.com/user-attachments/assets/ca797f4e-f70f-462e-aecf-518d692ba944" />
+### Dark theme
+<img width="1201" height="750" alt="image" src="https://github.com/user-attachments/assets/f13b8a23-b3f8-458b-a72b-f6f6aa3aaad3" />
 
 **double clicks waking**
-<img width="1199" height="764" alt="image" src="https://github.com/user-attachments/assets/2887b5c7-dfc9-41a1-8894-54a50b6ec1bd" />
-<img width="1193" height="757" alt="image" src="https://github.com/user-attachments/assets/bbdcf4e4-9a68-4905-be11-773203039b60" />
+<img width="1198" height="749" alt="image" src="https://github.com/user-attachments/assets/1100ab59-f96b-4102-943b-b82f4f204ec3" />
+
+<img width="1199" height="750" alt="image" src="https://github.com/user-attachments/assets/50991167-6615-4b0e-87b0-ef5ffd51a7c4" />
 
 **clicks ok/press enter**
-<img width="1201" height="764" alt="image" src="https://github.com/user-attachments/assets/aac00956-d035-472a-a39d-c16393965f21" />
+<img width="1198" height="748" alt="image" src="https://github.com/user-attachments/assets/17c097f8-3fea-443e-b924-5adf815846fd" />
 
 **cursor over dashboard**
-<img width="1198" height="766" alt="image" src="https://github.com/user-attachments/assets/e4377858-8314-4994-a385-e7f8daa3166c" />
-
-<img width="1198" height="770" alt="image" src="https://github.com/user-attachments/assets/eb0cfb23-f3ad-4241-b3e5-9e7befc5b5f3" />
-
-<img width="1194" height="767" alt="image" src="https://github.com/user-attachments/assets/dcac283a-e0e3-46e2-b40e-6bd0bb3c9941" />
-
-<img width="1208" height="776" alt="image" src="https://github.com/user-attachments/assets/45cd31e2-b4b3-4b62-bf45-a6f4330b135f" />
-
-<img width="1202" height="766" alt="image" src="https://github.com/user-attachments/assets/2f1d825a-e3ba-444c-a9c4-e2097af0164e" />
+<img width="1201" height="755" alt="image" src="https://github.com/user-attachments/assets/d8f93018-9254-4159-aca0-2554fb6c16a1" />
+<img width="1198" height="753" alt="image" src="https://github.com/user-attachments/assets/b8221059-a71e-4710-9c2d-55f629978139" />
+<img width="1198" height="749" alt="image" src="https://github.com/user-attachments/assets/f2cb63c8-2980-4d0e-aedd-4bc48d368a69" />
+<img width="1200" height="748" alt="image" src="https://github.com/user-attachments/assets/edc209ba-953c-4981-be09-964d59055cc3" />
+### Light Theme
+<img width="1197" height="751" alt="image" src="https://github.com/user-attachments/assets/03b1ebd5-a4f5-4df6-a96d-30d1bba4383a" />
+<img width="1202" height="748" alt="image" src="https://github.com/user-attachments/assets/1723aba7-119d-475f-83fe-a3ffdbdc77af" />
+<img width="1200" height="750" alt="image" src="https://github.com/user-attachments/assets/719bb415-e29e-4fe4-89d1-e5c336887fd0" />
+<img width="1200" height="748" alt="image" src="https://github.com/user-attachments/assets/c555410a-076d-4e56-bd7c-4f4895822cb3" />
 
 ---
 
