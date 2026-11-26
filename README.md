@@ -153,15 +153,15 @@ python dailytracker_ui.py
 ---
 # Screenshots
 ### Dark theme
-<img width="1200" height="750" alt="image" src="https://github.com/user-attachments/assets/90f73e88-ed3b-46ba-8caa-071773cedf22" />
+<img width="1199" height="751" alt="image" src="https://github.com/user-attachments/assets/25edc626-c248-494f-90fd-03bbe769b14b" />
 
 **double clicks waking**
-<img width="1193" height="750" alt="image" src="https://github.com/user-attachments/assets/6fdb2fe2-d109-482a-810a-d2a190ae6a2f" />
+<img width="1201" height="746" alt="image" src="https://github.com/user-attachments/assets/798c08c5-5552-4342-af12-42b75fba8f1a" />
 
-<img width="1198" height="750" alt="image" src="https://github.com/user-attachments/assets/2c7a8c02-6f27-4abe-b9b6-219de32c6d99" />
+<img width="1202" height="750" alt="image" src="https://github.com/user-attachments/assets/f46057d4-dcbb-4fda-8b54-e0c5744a2e56" />
 
 **clicks ok/press enter**
-<img width="1202" height="749" alt="image" src="https://github.com/user-attachments/assets/1b213863-1f2b-4446-8e56-c09f000cb62e" />
+<img width="1202" height="749" alt="image" src="https://github.com/user-attachments/assets/0c7ae6d7-de01-4106-a741-1504ade59fa7" />
 
 **cursor over dashboard**
 <img width="1200" height="749" alt="image" src="https://github.com/user-attachments/assets/88e3a4e2-77ce-474e-8913-afa23684c5dc" />
@@ -170,7 +170,7 @@ python dailytracker_ui.py
 <img width="1198" height="754" alt="image" src="https://github.com/user-attachments/assets/6a06de2a-def2-4b70-87f8-c79048e75090" />
 
 ### Light Theme
-<img width="1197" height="751" alt="image" src="https://github.com/user-attachments/assets/03b1ebd5-a4f5-4df6-a96d-30d1bba4383a" />
+<img width="1198" height="750" alt="image" src="https://github.com/user-attachments/assets/1757af1f-1b82-48c0-8f09-b7ce1f5270b4" />
 <img width="1202" height="748" alt="image" src="https://github.com/user-attachments/assets/1723aba7-119d-475f-83fe-a3ffdbdc77af" />
 <img width="1200" height="750" alt="image" src="https://github.com/user-attachments/assets/719bb415-e29e-4fe4-89d1-e5c336887fd0" />
 <img width="1200" height="748" alt="image" src="https://github.com/user-attachments/assets/c555410a-076d-4e56-bd7c-4f4895822cb3" />
